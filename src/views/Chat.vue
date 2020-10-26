@@ -19,12 +19,13 @@
                 </span> </div>
             </div>
           </div>
-          <div class="inbox_chat">
+          <div ref="accordion" class="accordion" role="tablist">
+             <UserList ref="userlist"  @sendMessage="submitMessage"></UserList>
           </div>
         </div>
         <div class="mesgs">
           <div class="msg_history" ref="messagePanel">
-             <MessageVue ref="messages" :messages="messages"></MessageVue>
+             <MessageVue ref="messages" :messages="messages" ></MessageVue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
@@ -41,8 +42,11 @@
 <script>
 
 import '../styles/chat.scss';
+import { ACTIONS, EVENTS } from "../config"
 import { mapActions, mapGetters } from 'vuex'
 import MessageVue from '@/components/Message.vue'
+import UserList from '@/components/UserList.vue'
+
 
 /**
  * @author Attila Barna
@@ -60,7 +64,17 @@ export default {
   },
 
   components : {
-    MessageVue
+    MessageVue,
+    UserList
+  },
+
+
+  sockets: {
+
+  },
+
+  beforeCreate: function() {
+    this.$socket.emit(EVENTS.JOIN_ROOM, this.$store.state)
   },
 
   watch : {
@@ -77,7 +91,7 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
-        this.submitMessage( this.msg)
+        this.submitMessage( { msg: this.msg  , type:  'sent' } )
         this.msg = ''
       }
     }

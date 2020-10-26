@@ -4,3 +4,19 @@ const config = require('../config')
 
 const RoomRouter = express.Router()
 module.exports = RoomRouter
+
+
+const rooms = [
+  {
+      id: 1,
+      name: 'Arena'
+  }
+]
+
+
+// route for get rooms
+RoomRouter.get('/', (req,res) => {
+  res.send(rooms)
+})
+
+module.exports = RoomRouter

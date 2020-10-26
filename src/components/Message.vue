@@ -13,8 +13,15 @@
         <div class="received_msg">
           <div class="received_withd_msg">
             <p> {{  msg.message }} </p>
-            <span class="time_date"> 11:01 AM | June 9</span>
+            <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
           </div>
+        </div>
+      </div>
+
+     <div v-else-if="msg.type === 'system'" class="outgoing_msg">
+        <div class="sent_msg">
+            <p> System message: {{ msg.message }} </p>
+          <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
         </div>
       </div>
 

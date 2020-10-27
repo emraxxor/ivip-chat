@@ -9,7 +9,8 @@ export const ACTIONS = {
 
 
 export const EVENTS = {
-  JOIN_ROOM: 'joinRoom'
+  JOIN_ROOM: 'joinRoom',
+  SUBMIT_MESSAGE : 'publicMessage'
 }
 
 

@@ -34,6 +34,8 @@ const onConnection = (socket) => {
     })
 
 
+    socket.on('publicMessage', events.publicMessage(socket, namespace))
+
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
 
 

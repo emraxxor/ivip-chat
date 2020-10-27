@@ -38,12 +38,32 @@
 
 </template>
 <script>
+import { mapActions, mapGetters } from 'vuex'
+
 export default {
 
-  data() {
-    return {
-      msg:  {}
-    }
+  data : () => ({}),
+
+  sockets: {
+      publicMessage : function(  {  message, username } ) {
+          console.log( ` ${username} got ${message} `  )
+          this.addMessage({
+                  type : 'incoming',
+                  username: username,
+                  message : message,
+                  time: new Date()
+          })
+
+      }
+  },
+
+
+  computed : {
+        ...mapGetters( {
+              messages : 'getMessages',
+              user : 'getUserName'
+        }  ),
+
   },
 
   watch : {
@@ -53,15 +73,12 @@ export default {
   },
 
   methods : {
-
+        ...mapActions({ addMessage : 'addMessage' }),
 
   },
 
   props: {
-    messages: {
-      type: Array,
-      required: true
-    }
+
   },
 
   mounted() {

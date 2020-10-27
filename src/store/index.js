@@ -56,12 +56,8 @@ export default new Vuex.Store({
   },
 
   actions : {
-    async addMessage(state, { msg, type } ) {
-      state.commit('addMessage', {
-        type: type,
-        time : new Date(),
-        message : msg
-      })
+    async addMessage(state, o ) {
+      state.commit('addMessage', o )
     },
 
 

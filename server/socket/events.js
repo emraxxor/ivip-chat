@@ -31,10 +31,15 @@ const leaveChat = (socket, namespace) => async ({ room, username }) => {
 }
 
 
+const publicMessage = (namespace) => ({ room, message, username }) => {
+  console.log(`[EVENT] Public messsage, room : ${room} , message: ${message} , username : ${username} `)
+  namespace.in(room).emit('publicMessage', { message, username })
+}
 
 
 
 module.exports = {
+    publicMessage,
     leaveRoom,
     leaveChat
 }

@@ -23,7 +23,8 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
 
   sockets: {
-      userJoinedToRoom : function(  { users, username } ) {
+
+       userJoinedToRoom : function(  { users, username } ) {
           this.$store
             this.updateUsers( users.map( e => {
               return {

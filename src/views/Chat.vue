@@ -25,7 +25,7 @@
         </div>
         <div class="mesgs">
           <div class="msg_history" ref="messagePanel">
-             <MessageVue ref="messages" :messages="messages" ></MessageVue>
+             <MessageVue ref="messages" ></MessageVue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
@@ -74,7 +74,7 @@ export default {
   },
 
   beforeCreate: function() {
-    this.$socket.emit(EVENTS.JOIN_ROOM, this.$store.state)
+      this.$socket.emit(EVENTS.JOIN_ROOM, this.$store.state)
   },
 
   watch : {
@@ -91,7 +91,12 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
-        this.submitMessage( { msg: this.msg  , type:  'sent' } )
+        this.$socket.emit(EVENTS.SUBMIT_MESSAGE , { ...this.$store.state, message: this.msg  })
+        this.submitMessage({
+                  type : 'sent',
+                  message : this.msg,
+                  time: new Date()
+        })
         this.msg = ''
       }
     }

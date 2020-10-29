@@ -11,8 +11,6 @@ function Redis() {
   })
 }
 
-
-
 /**
 * Add a user to the specified room
 */
@@ -64,16 +62,36 @@ Redis.prototype.usersByRoom = function (room) {
 
 
 /**
- * Get user by room and socketId
- * @param  {} room
- * @param  {} socketId
+ * Get user by room and uid
  */
-Redis.prototype.getUser = function (room, socketId) {
+Redis.prototype.getUserByRoom = function (room, uid) {
   return this.client
-      .hgetAsync(room, socketId)
+      .hgetAsync(room, uid)
+      .then(
+          res => JSON.parse(res),
+          err => { console.log('getUserByRoom ', err) }
+      )
+}
+
+
+Redis.prototype.getUser = function (uid) {
+  return this.client
+      .hgetAsync('users', uid)
       .then(
           res => JSON.parse(res),
           err => { console.log('getUser ', err) }
+      )
+}
+
+/**
+ * Delete the given user from the room
+ */
+Redis.prototype.deleteUserFromRoom = function (room, uid) {
+  this.client
+      .hdelAsync(room, uid)
+      .then(
+          res => (res),
+          err => { console.log('deleteUser ', err) }
       )
 }
 
@@ -81,9 +99,9 @@ Redis.prototype.getUser = function (room, socketId) {
 /**
  * Delete the given user from the room
  */
-Redis.prototype.deleteUser = function (room, socketId) {
-  return this.client
-      .hdelAsync(room, socketId)
+Redis.prototype.deleteUser = function (uid) {
+  this.client
+      .hdelAsync('users', uid)
       .then(
           res => (res),
           err => { console.log('deleteUser ', err) }
@@ -102,7 +120,6 @@ Redis.prototype.getClientsByRoom = function (io, namespace, room) {
       })
   })
 }
-
 
 
 module.exports = new Redis()

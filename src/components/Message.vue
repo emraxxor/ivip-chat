@@ -1,6 +1,6 @@
 <template>
   <div ref="msgs"  v-if="messages.length > 0"  class="">
-    <div v-for="msg in messages" class="col-12">
+    <div v-for="msg in messages" class="col-12" :key="msg.key">
       <div v-if="msg.type === 'incoming' " class="incoming_msg">
 
         <div class="incoming_msg_img">

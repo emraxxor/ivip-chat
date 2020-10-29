@@ -31,7 +31,7 @@
 							<span class="input-group-text">Room:</span>
 						</div>
             <select class="form-control" v-model="room">
-              <option v-for="r in rooms" :value="r.id">{{ r.name }}</option>
+              <option v-for="r in rooms" :key="r.id" :value="r.id">{{ r.name }}</option>
             </select>
 					</div>
 

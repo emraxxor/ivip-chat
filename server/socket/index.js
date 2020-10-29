@@ -13,7 +13,7 @@ const onConnection = (socket) => {
   const clientIp = socket.request.connection.remoteAddress;
 
 
-  socket.on('joinRoom', ({ username, room, status }) => {
+    socket.on('joinRoom', ({ username, room, status }) => {
       console.log(`[SOCKET] User ${username} - ${clientIp} wants to join the room ${room}`)
 
       socket.join(room, async () => {
@@ -23,21 +23,24 @@ const onConnection = (socket) => {
           userStatus = status
 
           try {
-              await redis.addUser(room, userName, { username, status,  privateChat: false   })
+              await redis.addUser(room, userName, { username, status  })
               const users = await redis.usersByRoom(room)
-              //const users = await redis.users(room)
               namespace.in(room).emit('userJoinedToRoom', { users, username })
           } catch (error) {
               console.log(error)
           }
-      })
+       })
+
+       socket.join(`user:${username}`)
+
     })
 
 
+    socket.on('acceptPrivate',  events.acceptPrivate(socket, namespace ) )
+    socket.on('declinePrivate',  events.declinePrivate(socket, namespace ) )
+    socket.on('askPrivate',  events.askPrivateChat(socket, namespace ) )
     socket.on('publicMessage', events.publicMessage(socket, namespace))
-
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
-
 
     socket.on('disconnect', async () => {
       console.log(`User "${userName}" leaves the chat`)

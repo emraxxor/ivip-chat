@@ -1,6 +1,7 @@
 <template>
 <!-- basic template from https://bootsnipp.com/ -->
 <div class="container-fluid">
+
 <div class="video-panel">
 
 </div>
@@ -36,7 +37,31 @@
         </div>
       </div>
 
-    </div></div>
+    </div>
+
+  <div v-for="notice in notices" :key="notice.username">
+      <Dialog :data="notice" title="Private chat" open='true' @validate="onNoticeAccept" @invalidate="onNoticeDecline">
+          <div slot="dialogBody">
+             <div v-if="notice.type == 'ask'">
+                   {{ notice.username }} wants to make a private chat with you.
+             </div>
+             <div v-else-if="notice.type == 'accept'">
+                   {{ notice.username }} is accepted your request.
+             </div>
+             <div v-else-if="notice.type == 'decline'">
+                   {{ notice.username }} is declined your request.
+             </div>
+          </div>
+      </Dialog>
+  </div>
+
+  <PrivateChat  v-for="priv in accepted" @close="privateWindowOnClose" :key="priv.username" :data="priv" title="Private chat">
+      <div slot="dialogBody">
+          {{ priv.username }} wants to make a private chat with you.
+      </div>
+  </PrivateChat>
+
+</div>
 
 </template>
 <script>
@@ -46,6 +71,8 @@ import { ACTIONS, EVENTS } from "../config"
 import { mapActions, mapGetters } from 'vuex'
 import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
+import Dialog from '@/components/DialogWindow.vue'
+import PrivateChat from '@/components/PrivateChat.vue'
 
 
 /**
@@ -53,11 +80,12 @@ import UserList from '@/components/UserList.vue'
  */
 export default {
 
-  data()  {
-    return {
+  data : () => ({
+
       msg : '',
-    }
-  },
+      notices : [],
+      accepted : [],
+  }),
 
   computed : {
       ...mapGetters( { messages : 'getMessages' } ),
@@ -65,12 +93,20 @@ export default {
 
   components : {
     MessageVue,
-    UserList
+    Dialog,
+    UserList,
+    PrivateChat
   },
 
 
   sockets: {
 
+      notice : function( data ) {
+          const exists = this.notices.filter(e => e.username === data.username && e.type == data.type ).length > 0
+          if ( !exists ) {
+            this.notices.push({...data})
+          }
+      },
   },
 
   beforeCreate: function() {
@@ -89,6 +125,26 @@ export default {
   methods :  {
     ...mapActions({ submitMessage : 'addMessage' }),
 
+    privateWindowOnClose(item) {
+        this.accepted = this.accepted.filter(e => e.username !== item.username)
+    },
+
+    onNoticeAccept : function(item) {
+      if ( item.type == 'ask' ) {
+         this.$socket.emit(EVENTS.ACCEPT_PRIVATE ,  { to : item.username , from : item.to , type : 'accept' }  )
+         this.accepted.push(item)
+      }
+
+      this.notices = this.notices.filter(e => e.username !== item.username)
+    },
+
+    onNoticeDecline : function(item) {
+      if ( item.type == 'ask' )
+        this.$socket.emit(EVENTS.DECLINE_PRIVATE ,  { to : item.username , from : item.to, type : 'decline' }  )
+
+      this.notices = this.notices.filter(e => e.username !== item.username)
+    },
+
     submit() {
       if ( this.msg.length > 0 ) {
         this.$socket.emit(EVENTS.SUBMIT_MESSAGE , { ...this.$store.state, message: this.msg  })
@@ -101,8 +157,5 @@ export default {
       }
     }
   }
-
-
-
 }
 </script>

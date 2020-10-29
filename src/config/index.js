@@ -10,7 +10,10 @@ export const ACTIONS = {
 
 export const EVENTS = {
   JOIN_ROOM: 'joinRoom',
-  SUBMIT_MESSAGE : 'publicMessage'
+  ACCEPT_PRIVATE : 'acceptPrivate',
+  DECLINE_PRIVATE : 'declinePrivate',
+  SUBMIT_MESSAGE : 'publicMessage',
+  ASK_PRIVATE : 'askPrivate'
 }
 
 

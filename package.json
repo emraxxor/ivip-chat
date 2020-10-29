@@ -22,8 +22,10 @@
     "path": "^0.12.7",
     "popper.js": "^1.16.1",
     "vue": "^2.5.2",
+    "vue-dialog-drag": "^0.1.29",
     "vue-owl-carousel": "^2.0.3",
     "vue-router": "^3.0.1",
+    "vue-simple-context-menu": "^3.3.2",
     "vuex": "^3.5.1"
   },
   "devDependencies": {

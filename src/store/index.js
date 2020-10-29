@@ -1,3 +1,4 @@
+import { stat } from 'fs'
 import { resolve } from 'path'
 import Vue from 'vue'
 import Vuex from 'vuex'
@@ -18,6 +19,7 @@ export default new Vuex.Store({
     room: undefined,
     username: undefined,
     status: STATUS.AVAILABLE,
+    count : 0,
     rooms: [],
     messages :  [],
     users : [],
@@ -41,8 +43,15 @@ export default new Vuex.Store({
       state.username = name
     },
 
-    setUsers(state, users) {
-       state.users = users
+    addUser(state, o ) {
+      state.count = state.count + 1
+      o.key = state.count
+      state.users.push( o )
+    },
+
+    setUsers(state, o ) {
+      Array.from(o).forEach( e => ( state.count = state.count + 1 ,  e['key'] = state.count , e  ) )
+      state.users = o
     },
 
     removeUser(state,userName) {
@@ -50,6 +59,8 @@ export default new Vuex.Store({
     },
 
     addMessage(state, o) {
+      state.count = state.count + 1
+      o.key = state.count
       state.messages.push(o)
     }
 
@@ -75,13 +86,16 @@ export default new Vuex.Store({
 
     },
 
-
     removeUser({commit}, userName) {
       commit('removeUser', userName)
     },
 
     updateUsers({commit}, users ) {
         commit('setUsers', users)
+    },
+
+    addUser({commit}, user) {
+      commit('addUser', user)
     },
 
     updateRoom( state, room ) {

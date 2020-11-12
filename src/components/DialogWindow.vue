@@ -68,7 +68,7 @@ export default {
           default : {}
         },
         marginTop : {
-            default : '20%',
+            default : '0',
         },
         title : {
             type: String,

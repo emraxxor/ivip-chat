@@ -20,8 +20,9 @@ export default new Vuex.Store({
     username: undefined,
     status: STATUS.AVAILABLE,
     count : 0,
+    msg : { type: '', username: '', message:'', time:'' },
     rooms: [],
-    messages :  [],
+    public :  {},
     users : [],
   },
 
@@ -33,6 +34,12 @@ export default new Vuex.Store({
 
     setRoom(state, room) {
       state.room = room
+      if ( state.public[state.room] == null ) {
+        state.public[state.room] = {
+          roomName : state.room,
+          messages : []
+        }
+      }
     },
 
     setAuthenticate(state, status) {
@@ -61,7 +68,8 @@ export default new Vuex.Store({
     addMessage(state, o) {
       state.count = state.count + 1
       o.key = state.count
-      state.messages.push(o)
+      state.msg = o;
+      state.public[state.room].messages.push(state.msg)
     }
 
   },
@@ -114,17 +122,14 @@ export default new Vuex.Store({
         }
       })
     },
-
-
   },
 
   modules : {
 
   },
 
-
   getters : {
-     getMessages : state => state.messages ,
+     getPublic : state => state.public,
      getRooms : state => state.rooms,
      getRoom : state => state.room,
      getUserName : state => state.username,

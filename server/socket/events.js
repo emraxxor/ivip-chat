@@ -23,6 +23,7 @@ const acceptPrivate = (socket,namespace) => async({to , from , type }) => {
       console.log(`${from} is accepted private request for ${to} `)
       const user = await redis.getUser(to)
       if ( user ) {
+        redis.addPrivateChat(from,to)
         namespace.in(`user:${to}`).emit('notice',  {  username: from , type: type   }  )
       } else {
         // notice the user about the given user is no longer available on the chat
@@ -56,9 +57,32 @@ const askPrivateChat = (socket, namespace) => async ({ username, to , status, au
   try {
     const user = await redis.getUser(to)
     if ( user ) {
-        const private = redis.getPrivateChat(username)
-        if ( ! private   ) {
+        if ( ! await redis.existsPrivateChat(username,to)   ) {
+            console.log(`Ask user: ${to}`)
             namespace.in(`user:${to}`).emit('notice',  { username, to , status, authenticated , type: 'ask' }  )
+        }
+    } else {
+      // notice the user about the given user is no longer available on the chat
+      // #todo
+    }
+  } catch(error) {
+    console.log(error)
+  }
+}
+
+
+/**
+ * Send private message to the given user
+ */
+const privateMessage = (socket, namespace) => async ({ username, to , message, status }) => {
+  console.log(`Private chat : ${username} -> ${to} `)
+
+  try {
+    const user = await redis.getUser(to)
+    if ( user ) {
+        if ( await redis.existsPrivateChat(username,to) || await redis.existsPrivateChat(to,username)   ) {
+            console.log(`Send message from: ${username} to user: ${to} , msg: ${message} `)
+            namespace.in(`user:${to}`).emit('privateMessage',  { from: username, to: to , message, status  } )
         }
     } else {
       // notice the user about the given user is no longer available on the chat
@@ -80,7 +104,7 @@ const leaveChat = (socket, namespace) => async ({ room, username }) => {
   try {
       await redis.deleteUserFromRoom(room, username)
       await redis.deleteUser(username)
-      const users = await redis.getUsers(room)
+      const users = await redis.usersByRoom(room)
 
       socket.leave(`user:${username}`)
       socket.leave(room, () => {
@@ -104,6 +128,7 @@ const publicMessage = (namespace) => ({ room, message, username }) => {
 
 
 module.exports = {
+    privateMessage,
     acceptPrivate,
     declinePrivate,
     publicMessage,

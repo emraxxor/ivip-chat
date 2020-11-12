@@ -11,7 +11,8 @@
         </div>
 
         <div class="received_msg">
-          <div class="received_withd_msg">
+          <div class="received_withd_msg" style="text-align:left">
+             <span class="msg_user_name">{{ msg.username }} :</span>
             <p> {{  msg.message }} </p>
             <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
           </div>
@@ -26,7 +27,9 @@
       </div>
 
       <div v-else-if="msg.type === 'sent'" class="outgoing_msg">
-        <div class="sent_msg">
+
+        <div class="sent_msg" style="text-align:left">
+            <span class="msg_user_name">{{ msg.username }}:</span>
             <p> {{ msg.message }} </p>
           <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
         </div>
@@ -42,33 +45,38 @@ import { mapActions, mapGetters } from 'vuex'
 
 export default {
 
-  data : () => ({}),
+  data : () => ({
+    messages : []
+  }),
 
   sockets: {
       publicMessage : function(  {  message, username } ) {
-          console.log( ` ${username} got ${message} `  )
           this.addMessage({
                   type : 'incoming',
                   username: username,
                   message : message,
                   time: new Date()
           })
-
       }
   },
 
-
   computed : {
         ...mapGetters( {
-              messages : 'getMessages',
-              user : 'getUserName'
+              public : 'getPublic',
+              user : 'getUserName',
+              roomId : 'getRoom',
         }  ),
+
+        msg() {
+          return this.$store.state.msg;
+        },
 
   },
 
   watch : {
-    messages() {
 
+    msg() {
+      this.messages = this.$store.state.public[ this.$store.state.room ].messages
     }
   },
 

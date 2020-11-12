@@ -74,12 +74,55 @@ Redis.prototype.getUserByRoom = function (room, uid) {
 }
 
 
-Redis.prototype.getUser = function (uid) {
+Redis.prototype.getUser = async function (uid) {
   return this.client
       .hgetAsync('users', uid)
       .then(
           res => JSON.parse(res),
           err => { console.log('getUser ', err) }
+      )
+}
+
+
+Redis.prototype.removePrivateChat = async function (ufrom,uto) {
+  const privs = await this.getPrivateChat(ufrom)
+  if ( privs && privs.indexOf(uto) !== -1 ) {
+      privs = privs.filter( e => e !== uto)
+      this.setPrivateChat(ufrom,privs)
+  }
+}
+
+Redis.prototype.setPrivateChat = async function (ufrom, data) {
+  return await this.client
+      .hsetAsync('privates', ufrom, JSON.stringify(data))
+      .then(
+        ()  => console.debug('setPrivateChat ', `Private ufrom:${ufrom} to ${data}`),
+        err => { console.log('setPrivateChat ', err) }
+      )
+}
+
+Redis.prototype.existsPrivateChat = async function (ufrom,uto) {
+  const privs = await this.getPrivateChat(ufrom)
+  return privs && privs.indexOf(uto) !== -1 ;
+}
+
+Redis.prototype.addPrivateChat = async function (ufrom,uto) {
+  const privs = await this.getPrivateChat(ufrom)
+  if ( privs && privs.indexOf(uto) === -1 ) {
+      privs.push(uto)
+      await this.setPrivateChat(ufrom,privs)
+  }  else if ( !privs ) {
+    let data = [uto]
+    await this.setPrivateChat(ufrom,data)
+  }
+}
+
+Redis.prototype.getPrivateChat = async function (ufrom) {
+  return await this.client
+      .hgetAsync('privates', ufrom)
+      .then(
+          res => JSON.parse(res),
+          err => { console.log('getPrivateChat ', err) }
       )
 }
 

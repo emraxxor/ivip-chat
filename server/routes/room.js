@@ -8,7 +8,7 @@ module.exports = RoomRouter
 
 const rooms = [
   {
-      id: 1,
+      id: 'ROOM_ARENA',
       name: 'Arena'
   }
 ]

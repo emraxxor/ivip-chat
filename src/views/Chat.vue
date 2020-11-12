@@ -26,7 +26,7 @@
         </div>
         <div class="mesgs">
           <div class="msg_history" ref="messagePanel">
-             <MessageVue ref="messages" ></MessageVue>
+             <MessageVue></MessageVue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
@@ -55,10 +55,7 @@
       </Dialog>
   </div>
 
-  <PrivateChat  v-for="priv in accepted" @close="privateWindowOnClose" :key="priv.username" :data="priv" title="Private chat">
-      <div slot="dialogBody">
-          {{ priv.username }} wants to make a private chat with you.
-      </div>
+  <PrivateChat ref="privs" v-for="priv in accepted" @close="privateWindowOnClose" :key="priv.username" :data="priv" title="Private chat">
   </PrivateChat>
 
 </div>
@@ -88,7 +85,7 @@ export default {
   }),
 
   computed : {
-      ...mapGetters( { messages : 'getMessages' } ),
+      ...mapGetters( { public  : 'getPublic' } ),
   },
 
   components : {
@@ -107,6 +104,8 @@ export default {
             this.notices.push({...data})
           }
       },
+
+
   },
 
   beforeCreate: function() {
@@ -114,7 +113,7 @@ export default {
   },
 
   watch : {
-    messages() {
+    public() {
        this.$refs.messagePanel.scrollTop = this.$refs.messagePanel.scrollHeight
     }
   },
@@ -133,6 +132,8 @@ export default {
       if ( item.type == 'ask' ) {
          this.$socket.emit(EVENTS.ACCEPT_PRIVATE ,  { to : item.username , from : item.to , type : 'accept' }  )
          this.accepted.push(item)
+      } else if ( item.type == 'accept' ) {
+         this.accepted.push(item)
       }
 
       this.notices = this.notices.filter(e => e.username !== item.username)
@@ -147,10 +148,17 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
-        this.$socket.emit(EVENTS.SUBMIT_MESSAGE , { ...this.$store.state, message: this.msg  })
+
+        this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
+          room: this.$store.getters.getRoom,
+          username : this.$store.getters.getUserName,
+          message: this.msg
+        })
+
         this.submitMessage({
                   type : 'sent',
                   message : this.msg,
+                  username: this.$store.getters.getUserName,
                   time: new Date()
         })
         this.msg = ''

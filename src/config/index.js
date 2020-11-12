@@ -13,7 +13,8 @@ export const EVENTS = {
   ACCEPT_PRIVATE : 'acceptPrivate',
   DECLINE_PRIVATE : 'declinePrivate',
   SUBMIT_MESSAGE : 'publicMessage',
-  ASK_PRIVATE : 'askPrivate'
+  ASK_PRIVATE : 'askPrivate',
+  SEND_PRIVATE_MESSAGE : 'privateMessage',
 }
 
 

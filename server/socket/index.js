@@ -41,6 +41,8 @@ const onConnection = (socket) => {
     socket.on('askPrivate',  events.askPrivateChat(socket, namespace ) )
     socket.on('publicMessage', events.publicMessage(socket, namespace))
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
+    socket.on('privateMessage', events.privateMessage(socket, namespace))
+
 
     socket.on('disconnect', async () => {
       console.log(`User "${userName}" leaves the chat`)

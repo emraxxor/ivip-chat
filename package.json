@@ -5,7 +5,7 @@
   "author": "Attila Barna <attila.barna.wr@gmail.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --https --config build/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "server": "node ./server/index.js",
     "debug": "node --inspect=0.0.0.0:9229 ./server/index.js",
     "start": "npm run dev",

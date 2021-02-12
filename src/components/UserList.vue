@@ -67,9 +67,13 @@ export default {
             {
                name : 'Private chat',
                value : 'private',
-            },
+            },/*
             {
-               name : 'Ignore',
+               name : 'Webcam',
+               value : 'camera',
+            },*/
+            {
+               name : 'Ignore/Unignore',
                value : 'ignore'
             }
         ]
@@ -86,7 +90,6 @@ export default {
           updateUsers : 'updateUsers',
           submitMessage : 'addMessage',
           removeUser : 'removeUser'
-
         }),
 
         handleClick (event, item) {
@@ -95,10 +98,17 @@ export default {
         },
 
         optionClicked (event) {
-          this.$socket.emit(EVENTS.ASK_PRIVATE , {
-            ...Object.keys( this.$store.state ).reduce( (res,key) => (  res[key] = this.$store.state[key]  , res ) , {}    ),
-            to : event.item.name
-          })
+          if ( event.option.value === 'private') {
+            this.$socket.emit(EVENTS.ASK_PRIVATE , {
+              ...Object.keys( this.$store.state ).reduce( (res,key) => (  res[key] = this.$store.state[key]  , res ) , {}    ),
+              to : event.item.name
+            })
+          } else if ( event.option.value === 'camera') {
+              this.$socket.emit(EVENTS.ASK_CAMERA , {
+              ...Object.keys( this.$store.state ).reduce( (res,key) => (  res[key] = this.$store.state[key]  , res ) , {}    ),
+              to : event.item.name
+            })
+          }
         }
 
 

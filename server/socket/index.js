@@ -37,11 +37,15 @@ const onConnection = (socket) => {
 
 
     socket.on('acceptPrivate',  events.acceptPrivate(socket, namespace ) )
+    socket.on('acceptCamera',  events.acceptCamera(socket, namespace ) )
     socket.on('declinePrivate',  events.declinePrivate(socket, namespace ) )
+    socket.on('declineCamera',  events.declineCamera(socket, namespace ) )
     socket.on('askPrivate',  events.askPrivateChat(socket, namespace ) )
+    socket.on('askCamera',  events.askCamera(socket, namespace ) )
     socket.on('publicMessage', events.publicMessage(socket, namespace))
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
     socket.on('privateMessage', events.privateMessage(socket, namespace))
+    socket.on('PCSignaling', events.PCSignaling(socket, namespace));
 
 
     socket.on('disconnect', async () => {

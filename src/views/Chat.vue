@@ -2,9 +2,6 @@
 <!-- basic template from https://bootsnipp.com/ -->
 <div class="container-fluid">
 
-<div class="video-panel">
-
-</div>
 <div class="messaging">
       <div class="inbox_msg">
         <div class="inbox_people">
@@ -26,7 +23,9 @@
         </div>
         <div class="mesgs">
           <div class="msg_history" ref="messagePanel">
-             <MessageVue></MessageVue>
+             <MessageVue
+                @onChange="onChangeMessagePanel"
+             ></MessageVue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
@@ -42,13 +41,22 @@
   <div v-for="notice in notices" :key="notice.username">
       <Dialog :data="notice" title="Private chat" open='true' @validate="onNoticeAccept" @invalidate="onNoticeDecline">
           <div slot="dialogBody">
-             <div v-if="notice.type == 'ask'">
+             <div v-if="notice.type == 'ask_private'">
                    {{ notice.username }} wants to make a private chat with you.
              </div>
-             <div v-else-if="notice.type == 'accept'">
+             <div v-if="notice.type == 'ask_camera'">
+                   {{ notice.username }} wants to request access to your camera.
+             </div>
+             <div v-else-if="notice.type == 'accept_private'">
                    {{ notice.username }} is accepted your request.
              </div>
-             <div v-else-if="notice.type == 'decline'">
+            <div v-else-if="notice.type == 'accept_camera'">
+                   {{ notice.username }} is accepted your request.
+             </div>
+             <div v-else-if="notice.type == 'decline_private'">
+                   {{ notice.username }} is declined your request.
+             </div>
+             <div v-else-if="notice.type == 'decline_camera'">
                    {{ notice.username }} is declined your request.
              </div>
           </div>
@@ -64,13 +72,12 @@
 <script>
 
 import '../styles/chat.scss';
-import { ACTIONS, EVENTS } from "../config"
+import { ACTIONS, EVENTS, PCSIGNAL } from "../config"
 import { mapActions, mapGetters } from 'vuex'
 import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
-
 
 /**
  * @author Attila Barna
@@ -78,23 +85,28 @@ import PrivateChat from '@/components/PrivateChat.vue'
 export default {
 
   data : () => ({
-
       msg : '',
       notices : [],
       accepted : [],
+      webcams : []
   }),
 
   computed : {
-      ...mapGetters( { public  : 'getPublic' } ),
+      ...mapGetters( {
+              public  : 'getPublic',
+              room : 'getRoom',
+              userName : 'getUserName',
+              userStatus : 'getUserStatus',
+              isAuthenticated : 'getAuthenticated'
+      } ),
   },
 
   components : {
     MessageVue,
     Dialog,
     UserList,
-    PrivateChat
+    PrivateChat,
   },
-
 
   sockets: {
 
@@ -105,7 +117,6 @@ export default {
           }
       },
 
-
   },
 
   beforeCreate: function() {
@@ -113,9 +124,7 @@ export default {
   },
 
   watch : {
-    public() {
-       this.$refs.messagePanel.scrollTop = this.$refs.messagePanel.scrollHeight
-    }
+
   },
 
   mounted() {
@@ -128,21 +137,35 @@ export default {
         this.accepted = this.accepted.filter(e => e.username !== item.username)
     },
 
+    onChangeMessagePanel(newv,oldv) {
+      setTimeout(() => {
+        this.$refs.messagePanel.scrollTop = this.$refs.messagePanel.scrollHeight
+      },100)
+    },
+
     onNoticeAccept : function(item) {
-      if ( item.type == 'ask' ) {
-         this.$socket.emit(EVENTS.ACCEPT_PRIVATE ,  { to : item.username , from : item.to , type : 'accept' }  )
-         this.accepted.push(item)
-      } else if ( item.type == 'accept' ) {
-         this.accepted.push(item)
+      if ( item.type == 'ask_private' ) {
+         this.$socket.emit(EVENTS.ACCEPT_PRIVATE ,  { to : item.username , from : item.to , type : 'accept_private' }  )
+         this.accepted.push({...item, callee : true})
+      } else if ( item.type == 'ask_camera' ) {
+         console.log(`Usercamera offer to ${item.username}`)
+         this.$refs.usercamera.offer(item.username)
+         this.$socket.emit(EVENTS.ACCEPT_CAMERA ,   { to : item.username , from : item.to , type : 'accept_camera' }  )
+      } else if ( item.type == 'accept_private' ) {
+         this.accepted.push({...item, callee: false})
+      }  else if ( item.type == 'accept_camera' ) {
+         this.notices.push(item)
       }
 
       this.notices = this.notices.filter(e => e.username !== item.username)
     },
 
     onNoticeDecline : function(item) {
-      if ( item.type == 'ask' )
-        this.$socket.emit(EVENTS.DECLINE_PRIVATE ,  { to : item.username , from : item.to, type : 'decline' }  )
-
+      if ( item.type == 'ask_private' ) {
+        this.$socket.emit(EVENTS.DECLINE_PRIVATE ,  { to : item.username , from : item.to, type : 'decline_private' }  )
+      } else if ( item.type == 'ask_camera' ) {
+         this.$socket.emit(EVENTS.DECLINE_CAMERA ,  { to : item.username , from : item.to, type : 'decline_camera' }  )
+      }
       this.notices = this.notices.filter(e => e.username !== item.username)
     },
 
@@ -167,3 +190,8 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  .video-panel {
+    display: flex;
+  }
+</style>

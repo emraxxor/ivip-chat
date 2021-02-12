@@ -92,6 +92,7 @@ Redis.prototype.removePrivateChat = async function (ufrom,uto) {
   }
 }
 
+
 Redis.prototype.setPrivateChat = async function (ufrom, data) {
   return await this.client
       .hsetAsync('privates', ufrom, JSON.stringify(data))
@@ -106,6 +107,12 @@ Redis.prototype.existsPrivateChat = async function (ufrom,uto) {
   return privs && privs.indexOf(uto) !== -1 ;
 }
 
+
+Redis.prototype.existsCamera = async function (ufrom,uto) {
+  const cams = await this.getCamera(ufrom)
+  return cams && cams.indexOf(uto) !== -1 ;
+}
+
 Redis.prototype.addPrivateChat = async function (ufrom,uto) {
   const privs = await this.getPrivateChat(ufrom)
   if ( privs && privs.indexOf(uto) === -1 ) {
@@ -115,6 +122,43 @@ Redis.prototype.addPrivateChat = async function (ufrom,uto) {
     let data = [uto]
     await this.setPrivateChat(ufrom,data)
   }
+}
+
+Redis.prototype.setCamera = async function (ufrom, data) {
+  return await this.client
+      .hsetAsync('webcams', ufrom, JSON.stringify(data))
+      .then(
+        ()  => console.debug('setCamera ', `Camera from:${ufrom} to ${data}`),
+        err => { console.log('setCamera ', err) }
+      )
+}
+
+Redis.prototype.addCamera = async function (ufrom,uto) {
+  const cams = await this.getCamera(ufrom)
+  if ( cams && cams.indexOf(uto) === -1 ) {
+      cams.push(uto)
+      await this.setCamera(ufrom,cams)
+  }  else if ( !cams ) {
+    let data = [uto]
+    await this.setCamera(ufrom,data)
+  }
+}
+
+Redis.prototype.removeCamera = async function (ufrom,uto) {
+  const cams = await this.getCamera(ufrom)
+  if ( cams && cams.indexOf(uto) !== -1 ) {
+      cams = cams.filter( e => e !== uto)
+      this.setCamera(ufrom,cams)
+  }
+}
+
+Redis.prototype.getCamera = async function (ufrom) {
+  return await this.client
+      .hgetAsync('webcams', ufrom)
+      .then(
+          res => JSON.parse(res),
+          err => { console.log('getCamera ', err) }
+      )
 }
 
 Redis.prototype.getPrivateChat = async function (ufrom) {

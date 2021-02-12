@@ -1,8 +1,22 @@
 <template>
-    <DialogDrag ref="dialog" :title="title"  :options="{ width: width,top:20, height: height }" @close="close">
 
-<div class="" style="width:100%;height:{height}px;">
-    <div class="chat-window" style="width:100%">
+<DialogDrag ref="dialog" :title="title"  :options="{ width: width,top:20, height: height }" @close="close">
+
+<div class="chat-dialog__dialog_container" style="width:100%;height:{height}px;">
+    <div v-if="privateCamera" class="chat-dialog__camera">
+      <PrivateCamera
+            :to="data.username"
+            :room="data.username"
+            :callee="data.callee"
+            :videoAnswer="videoAnswer"
+      >
+      </PrivateCamera>
+    </div>
+    <div v-else class="chat-dialog__camera">
+        <button @click="startCamera">Turn on camera</button>
+    </div>
+
+    <div class="chat-window">
         <div class="">
         	<div class="panel panel-default">
                 <div class="panel-heading top-bar">
@@ -10,7 +24,7 @@
                         <h3 class="panel-title"><span class="glyphicon glyphicon-comment"></span>{{ data.username }}</h3>
                     </div>
                 </div>
-                <div class="panel-body msg_container_base">
+                <div ref="messagesBody" class="panel-body msg_container_base">
                     <div v-for="msg in messages" :key="msg.cnt" class="row msg_container base_sent" :class=" msg.type=='SENT' ? 'base_sent' : 'base_receive'">
                         <div class="col-md-10 col-xs-10">
                             <div class="messages" :class=" msg.type=='SENT' ? 'msg_sent' : 'msg_receive'" style="text-align:left">
@@ -43,10 +57,11 @@
 </template>
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { ACTIONS, EVENTS } from "../config"
+import { ACTIONS, EVENTS, PCSIGNAL } from "../config"
 import DialogDrag from 'vue-dialog-drag'
 import 'vue-dialog-drag/dist/vue-dialog-drag.css'
 import '../styles/private.css'
+import PrivateCamera from './PrivateCamera';
 
 /**
  *
@@ -55,10 +70,25 @@ import '../styles/private.css'
 export default {
 
   data : () => ({
-        cnt : 0,
-        msg : '',
-        messages: []
+      cnt : 0,
+      msg : '',
+      messages: [],
+      privateCamera: false,
+      videoAnswer: {
+        video: undefined,
+        remoteDesc: undefined,
+        candidate: undefined,
+        close: false
+      }
   }),
+
+  watch : {
+    messages : function(newv,oldv) {
+        setTimeout( () => {
+          this.$refs.messagesBody.scrollTop = this.$refs.messagesBody.scrollHeight
+        },100)
+    }
+  },
 
   sockets: {
 
@@ -70,15 +100,37 @@ export default {
                         message : message,
                         username: from,
                         time: new Date()
-              })
+            })
             this.cnt++;
           }
-      }
+      },
+
+       PCSignaling: function({ target , from, candidate, sdp, type, room }) {
+          if (from === this.$store.state.username) return
+
+          if (sdp) {
+            if (sdp.type === PCSIGNAL.OFFER ) {
+              console.log(`[DEV] Received signal (offer) from ${from} `)
+              this.openCamera(sdp, from)
+            } else if (sdp.type === PCSIGNAL.ANSWER ) {
+              console.log(`[DEV] Received signal (answer) from ${from} `)
+              this.videoAnswer = { ...this.videoAnswer, remoteDesc: sdp }
+            } else {
+              console.log("[DEV] Unsupported SDP type")
+            }
+          }  else if (candidate) {
+                console.log(`[DEV] Received candidate from ${from} `)
+                console.log(candidate)
+                this.videoAnswer = { ...this.videoAnswer, candidate }
+          } else {
+                this.privateCamera = false
+          }
+       }
   },
 
 
   created() {
-
+    this.username = this.$store.state.username
   },
 
   mounted() {
@@ -87,6 +139,10 @@ export default {
 
   computed : {
 
+  },
+
+  beforeDestroy() {
+    this.closePrivate()
   },
 
   props : {
@@ -107,11 +163,25 @@ export default {
 
   methods : {
 
+      openCamera(sdp, from){
+        this.videoAnswer = { ...this.videoAnswer, video: true, remoteDesc: sdp, from }
+        this.privateCamera = true
+      },
+
+      startCamera() {
+         this.privateCamera = true;
+      },
+
       close: function() {
         this.$emit('close', this.data)
       },
 
-       submit(e) {
+
+      closePrivate() {
+
+      },
+
+      submit(e) {
             if ( this.msg.length > 0 ) {
 
               this.$socket.emit(EVENTS.SEND_PRIVATE_MESSAGE , {
@@ -139,7 +209,26 @@ export default {
 
 
   components : {
-    DialogDrag
+    DialogDrag,
+    PrivateCamera
   }
 }
 </script>
+<style lang="scss" scoped>
+  .chat-window {
+    width: 70% !important;
+  }
+
+  .chat-dialog {
+
+    &__camera {
+      width: 30%;
+    }
+
+
+
+    &__dialog_container {
+       display: flex;
+    }
+  }
+</style>

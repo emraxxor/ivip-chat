@@ -31,6 +31,22 @@ const acceptPrivate = (socket,namespace) => async({to , from , type }) => {
       }
 }
 
+
+/**
+ * Remote user is accepted the request to camera
+ */
+const acceptCamera = (socket,namespace) => async({to , from , type }) => {
+  console.log(`${from} is accepted request to camera for ${to} `)
+  const user = await redis.getUser(to)
+  if ( user ) {
+    redis.addCamera(from,to)
+    namespace.in(`user:${to}`).emit('notice',  {  username: from , type: type   }  )
+  } else {
+    // notice the user about the given user is no longer available on the chat
+    // #todo
+  }
+}
+
 /**
  * Remote user is declined the private request
  *
@@ -48,6 +64,24 @@ const declinePrivate = (socket,namespace) => async({to , from , type }) => {
       }
 }
 
+
+/**
+ * Remote user is declined the request to camera
+ *
+ * @param socket
+ * @param namespace
+ */
+const declineCamera = (socket,namespace) => async({to , from , type }) => {
+  console.log(`${from} is declined private request to camera for ${to}`)
+  const user = await redis.getUser(to)
+  if ( user ) {
+    namespace.in(`user:${to}`).emit('notice',  {  username: from , type : type  }  )
+  } else {
+    // notice the user about the given user is no longer available on the chat
+    // #todo
+  }
+}
+
 /**
  * Remote user initiates a conversation
  */
@@ -59,7 +93,7 @@ const askPrivateChat = (socket, namespace) => async ({ username, to , status, au
     if ( user ) {
         if ( ! await redis.existsPrivateChat(username,to)   ) {
             console.log(`Ask user: ${to}`)
-            namespace.in(`user:${to}`).emit('notice',  { username, to , status, authenticated , type: 'ask' }  )
+            namespace.in(`user:${to}`).emit('notice',  { username, to , status, authenticated , type: 'ask_private' }  )
         }
     } else {
       // notice the user about the given user is no longer available on the chat
@@ -70,6 +104,28 @@ const askPrivateChat = (socket, namespace) => async ({ username, to , status, au
   }
 }
 
+
+/**
+ * Remote user {username} ask a permission for the webcam
+ */
+const askCamera = (socket, namespace) => async ({ username, to , status, authenticated  }) => {
+  console.log(`Camera ask : ${username} -> ${to} `)
+
+  try {
+    const user = await redis.getUser(to)
+    if ( user ) {
+        if ( ! await redis.existsCamera(username,to)   ) {
+            console.log(`Ask user: ${to}`)
+            namespace.in(`user:${to}`).emit('notice',  { username, to , status, authenticated , type: 'ask_camera' }  )
+        }
+    } else {
+      // notice the user about the given user is no longer available on the chat
+      // #todo
+    }
+  } catch(error) {
+    console.log(error)
+  }
+}
 
 /**
  * Send private message to the given user
@@ -127,6 +183,13 @@ const publicMessage = (namespace) => ({ room, message, username }) => {
 }
 
 
+
+const PCSignaling = (namespace) => ({ target , from, room , candidate ,type, sdp  }) => {
+  console.log(`[PC] Private chat - User "${from}" sends a ${type} to "${target}"`)
+  namespace.in(`user:${target}`).emit('PCSignaling',  {  target , from, candidate, sdp, type, room })
+}
+
+
 module.exports = {
     privateMessage,
     acceptPrivate,
@@ -134,5 +197,9 @@ module.exports = {
     publicMessage,
     leaveRoom,
     leaveChat,
-    askPrivateChat
+    askPrivateChat,
+    askCamera,
+    acceptCamera,
+    declineCamera,
+    PCSignaling
 }

@@ -16,12 +16,8 @@ import { URL } from './config'
 import VueSocketIO from 'vue-socket.io'
 import io from 'socket.io-client'
 
-
-
 window.jQuery = require('jquery')
-
 Vue.config.productionTip = false
-
 
 // Socket config
 Vue.use(new VueSocketIO({
@@ -34,12 +30,10 @@ Vue.use(new VueSocketIO({
   },
 }))
 
-
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueMoment)
 Vue.use(VueResource)
-
 
 /* eslint-disable no-new */
 new Vue({

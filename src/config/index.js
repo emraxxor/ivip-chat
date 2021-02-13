@@ -1,6 +1,5 @@
 export const URL = `${process.env.VUE_APP_SOCKET_HOST || 'http://localhost'}:${process.env.VUE_APP_SOCKET_PORT || '3000'}`
 
-
 export const ACTIONS = {
     AUTHENTICATE : 'authenticate',
     JOIN_ROOM : 'joinRoom',
@@ -42,10 +41,13 @@ export const log = (arg) => {
 export const ICESERVERS = {
   iceServers : [
      {
-      urls: 'turn:yourcoturnserver:3478',
+      urls: 'turn:server.com:3478',
       username: 'user',
       credential: 'password'
-     }
+     },
+     {
+      urls: 'stun:stun.l.google.com:19302',
+     },
   ],
   iceTransportPolicy: "relay"
 }

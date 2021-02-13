@@ -29,7 +29,7 @@
 import { mapActions, mapGetters } from 'vuex'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
-import { ACTIONS, EVENTS } from "../config"
+import { EVENTS } from "../config"
 
 
 export default {

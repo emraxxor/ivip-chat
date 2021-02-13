@@ -8,6 +8,8 @@
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "server": "node ./server/index.js",
     "debug": "node --inspect=0.0.0.0:9229 ./server/index.js",
+    "production-start" : "node web-prod.js",
+    "production-build" : "webpack --config build/webpack.prod.conf.js",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "node build/build.js"
@@ -23,6 +25,7 @@
     "popper.js": "^1.16.1",
     "vue": "^2.5.2",
     "vue-dialog-drag": "^0.1.29",
+    "vue-draggable-resizable": "^2.3.0",
     "vue-owl-carousel": "^2.0.3",
     "vue-router": "^3.0.1",
     "vue-simple-context-menu": "^3.3.2",

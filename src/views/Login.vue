@@ -17,7 +17,7 @@
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-user"></i></span>
 						</div>
-						<input type="text" class="form-control"   v-model="username" placeholder="username">
+						<input type="text" class="form-control" maxlength="12"  v-model="username" placeholder="username">
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">

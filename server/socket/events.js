@@ -24,6 +24,7 @@ const acceptPrivate = (socket,namespace) => async({to , from , type }) => {
       const user = await redis.getUser(to)
       if ( user ) {
         redis.addPrivateChat(from,to)
+        redis.addPrivateChat(to,from)
         namespace.in(`user:${to}`).emit('notice',  {  username: from , type: type   }  )
       } else {
         // notice the user about the given user is no longer available on the chat
@@ -158,9 +159,15 @@ const privateMessage = (socket, namespace) => async ({ username, to , message, s
  */
 const leaveChat = (socket, namespace) => async ({ room, username }) => {
   try {
+      const privs = await redis.getPrivateChat(username)
+      const users = await redis.usersByRoom(room)
+
+      if ( privs  )
+        privs.forEach( e => namespace.in(`user:${e}`).emit('closePrivateChat',  { from: username, target: e  } ) ) ;
+
+      await redis.deleteUserFromPrivates(username)
       await redis.deleteUserFromRoom(room, username)
       await redis.deleteUser(username)
-      const users = await redis.usersByRoom(room)
 
       socket.leave(`user:${username}`)
       socket.leave(room, () => {
@@ -171,6 +178,24 @@ const leaveChat = (socket, namespace) => async ({ room, username }) => {
       console.log(error)
   }
 }
+
+
+/**
+ *  Closing private chat
+ *
+ * @param  socket
+ * @param  namespace
+ */
+const closePrivateChat = (socket, namespace) => async ({ from, target }) => {
+  try {
+      console.log(`${from} is closed the privet chat with ${target}`)
+      await redis.removePrivateChat(from,target)
+      namespace.in(`user:${target}`).emit('closePrivateChat',  { from, target  } )
+  } catch (error) {
+      console.log(error)
+  }
+}
+
 
 /**
  * A public message has been sent in a public room
@@ -201,5 +226,6 @@ module.exports = {
     askCamera,
     acceptCamera,
     declineCamera,
-    PCSignaling
+    PCSignaling,
+    closePrivateChat
 }

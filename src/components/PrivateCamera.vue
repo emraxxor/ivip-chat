@@ -5,7 +5,10 @@
       </div>
       <div class="video">
            <video ref="RemoteVideo" class="video__partner" autoplay></video>
-    </div>
+     </div>
+     <div class="video-turn-off">
+       <button type="button" @click="closeVideoCall()"><i class="fa fa-power-off" aria-hidden="true"></i></button>
+     </div>
   </div>
 </template>
 <script>
@@ -107,13 +110,12 @@ export default {
                     this.$socket.emit(EVENTS.PC_SIGNALING, {
                         candidate,
                         target: this.to,
+                        type : 'new-ice-candidate',
                         from: this.username,
                         room: this.room,
                     })
-                }, 500)
+                }, 4500)
       }
-
-
 
      this.pc.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent;
      this.pc.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent;
@@ -122,11 +124,15 @@ export default {
 
 
     closeVideoCall() {
-       this.pc.close()
-       this.pc = null
+       if ( this.pc ) {
+         this.$emit('closeCall');
+         this.pc.close()
+         this.pc = null
+       }
 
        this.$socket.emit(EVENTS.PC_SIGNALING, {
           target: this.to,
+          type : 'close-video-call',
           from: this.$store.state.username,
           room: this.room
         })
@@ -134,8 +140,6 @@ export default {
 
 
     handleICEGatheringStateChangeEvent(event) {
-      // Our sample just logs information to console here,
-      // but you can do whatever you need.
     },
 
      handleSignalingStateChangeEvent(event) {
@@ -173,12 +177,15 @@ export default {
       const desc = newv.remoteDesc
       const candidate = newv.candidate
 
-      if (!!desc && desc !== oldv.remoteDesc)
+      if (!!desc && desc !== oldv.remoteDesc) {
+        console.log('Set remote description')
+        console.log(desc)
         await this.setRemoteDescription(desc, this.pc)
-
+      }
 
       if (!!candidate && candidate !== oldv.candidate)
         await this.handleNewIceCandidateMsg(candidate)
+
 
     }
   }

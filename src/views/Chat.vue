@@ -1,6 +1,6 @@
 <template>
 <!-- basic template from https://bootsnipp.com/ -->
-<div class="container-fluid">
+<div :class="darktheme ? 'dark' : ''" class="container-fluid">
 
 <div class="messaging">
       <div class="inbox_msg">
@@ -11,26 +11,35 @@
             </div>
             <div class="srch_bar">
               <div class="stylish-input-group">
-                <input type="text" class="search-bar"  placeholder="Search" >
+                <input type="text" class="search-bar" @keyup="onChangeSearchBar" @change="onChangeSearchBar" placeholder="Search" >
                 <span class="input-group-addon">
-                <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
+                <button @click="onChangeSearchBar" type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
                 </span> </div>
             </div>
           </div>
           <div ref="accordion" class="accordion" role="tablist">
-             <UserList ref="userlist"  @sendMessage="submitMessage"></UserList>
+             <UserList ref="userlist" @clickOnItem="onClickUserItem"></UserList>
           </div>
         </div>
         <div class="mesgs">
-          <div class="msg_history" ref="messagePanel">
+          <div class="msg_history" ref="messagePanel" @click="displaySmileyPicker ? toogleSmiley() : {} ">
              <MessageVue
                 @onChange="onChangeMessagePanel"
+                @clickOnUserName="onClickUserName"
              ></MessageVue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
-              <input type="text" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
-              <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+              <div v-if="displaySmileyPicker">
+                <Picker :include="['people']" set='messenger'  title="Pick your emoji…" emoji="point_up"  @select="addSmiley"
+                        :style="{ position: 'absolute', bottom: '20px', right: '20px' }"
+                />
+              </div>
+              <input maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
+              <button class="msg_chat_btn" style="right:105px" @click="toogleChatType" type="button"><i class="fa fa-th" aria-hidden="true"></i></button>
+              <button class="msg_chat_btn" style="right:70px" @click="toogleDarkTheme" type="button"><i class="fa fa-eye" aria-hidden="true"></i></button>
+              <button class="msg_chat_btn" style="right:35px" @click="toogleSmiley" type="button"><i class="fa fa-smile" aria-hidden="true"></i></button>
+              <button class="msg_chat_btn" @click="submit" type="button"><i class="fa fa-share" aria-hidden="true"></i></button>
             </div>
           </div>
         </div>
@@ -72,12 +81,14 @@
 <script>
 
 import '../styles/chat.scss';
-import { ACTIONS, EVENTS, PCSIGNAL } from "../config"
+import { CHAT_TYPE, EVENTS } from "../config"
 import { mapActions, mapGetters } from 'vuex'
 import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
+import { Picker } from 'emoji-mart-vue'
+
 
 /**
  * @author Attila Barna
@@ -88,7 +99,8 @@ export default {
       msg : '',
       notices : [],
       accepted : [],
-      webcams : []
+      webcams : [],
+      displaySmileyPicker : false,
   }),
 
   computed : {
@@ -97,7 +109,9 @@ export default {
               room : 'getRoom',
               userName : 'getUserName',
               userStatus : 'getUserStatus',
-              isAuthenticated : 'getAuthenticated'
+              isAuthenticated : 'getAuthenticated',
+              darktheme : 'getDarktheme',
+              chatType : 'getChatType'
       } ),
   },
 
@@ -106,6 +120,7 @@ export default {
     Dialog,
     UserList,
     PrivateChat,
+    Picker
   },
 
   sockets: {
@@ -131,10 +146,54 @@ export default {
   },
 
   methods :  {
-    ...mapActions({ submitMessage : 'addMessage' }),
+    ...mapActions({
+                    submitMessage : 'addMessage',
+                    setDarkTheme : 'updateDark',
+                    updateChatType : 'updateChatType'
+    }),
+
+    toogleDarkTheme() {
+        this.setDarkTheme(!this.darktheme)
+
+        if ( this.darktheme ) {
+           document.body.classList.add('dark')
+        } else {
+           document.body.classList.remove('dark')
+        }
+    },
+
+    toogleChatType() {
+        if ( this.chatType === CHAT_TYPE.TYPE_MESSENGER ) {
+           this.updateChatType(CHAT_TYPE.TYPE_WALL)
+        } else {
+           this.updateChatType(CHAT_TYPE.TYPE_MESSENGER)
+        }
+    },
+
+    onChangeSearchBar(e) {
+        const val = e.target.value
+        this.$refs.userlist.setFilterValue(val)
+    },
+
+    addSmiley(smile) {
+      this.msg = `${this.msg} ${smile.colons}`
+    },
+
+    toogleSmiley() {
+        this.displaySmileyPicker = !this.displaySmileyPicker;
+    },
 
     privateWindowOnClose(item) {
         this.accepted = this.accepted.filter(e => e.username !== item.username)
+    },
+
+    onClickUserItem(item) {
+       this.msg = `${item.name}: `
+    },
+
+    onClickUserName(name) {
+        this.msg = `${name}: `
+        this.$refs.inputMessage.focus()
     },
 
     onChangeMessagePanel(newv,oldv) {
@@ -171,6 +230,9 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
+
+        if ( this.displaySmileyPicker  )
+          this.toogleSmiley()
 
         this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
           room: this.$store.getters.getRoom,

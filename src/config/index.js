@@ -19,6 +19,7 @@ export const EVENTS = {
   ASK_CAMERA : 'askCamera',
   SEND_PRIVATE_MESSAGE : 'privateMessage',
   PC_SIGNALING : 'PCSignaling',
+  CLOSE_PRIVATE : 'closePrivateChat'
 }
 
 
@@ -31,6 +32,12 @@ export const STATUS = {
 export const PCSIGNAL = {
   OFFER : 'offer',
   ANSWER : 'answer'
+}
+
+
+export const CHAT_TYPE = {
+   TYPE_MESSENGER : 'MESSENGER',
+   TYPE_WALL : 'WALL'
 }
 
 export const log = (arg) => {

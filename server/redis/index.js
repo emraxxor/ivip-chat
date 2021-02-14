@@ -85,7 +85,7 @@ Redis.prototype.getUser = async function (uid) {
 
 
 Redis.prototype.removePrivateChat = async function (ufrom,uto) {
-  const privs = await this.getPrivateChat(ufrom)
+  let privs = await this.getPrivateChat(ufrom)
   if ( privs && privs.indexOf(uto) !== -1 ) {
       privs = privs.filter( e => e !== uto)
       this.setPrivateChat(ufrom,privs)
@@ -170,6 +170,19 @@ Redis.prototype.getPrivateChat = async function (ufrom) {
       )
 }
 
+
+/**
+ * Delete the given user from the privates
+ */
+Redis.prototype.deleteUserFromPrivates = function (username) {
+  this.client
+      .hdelAsync('privates', username)
+      .then(
+          res => (res),
+          err => { console.log('deleteUserFromPrivates ', err) }
+      )
+}
+
 /**
  * Delete the given user from the room
  */
@@ -178,7 +191,7 @@ Redis.prototype.deleteUserFromRoom = function (room, uid) {
       .hdelAsync(room, uid)
       .then(
           res => (res),
-          err => { console.log('deleteUser ', err) }
+          err => { console.log('deleteUserFromRoom ', err) }
       )
 }
 

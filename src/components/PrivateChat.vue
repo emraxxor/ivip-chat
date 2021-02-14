@@ -11,7 +11,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body chat-dialog">
             <div class="chat-dialog__dialog_container" style="width:100%;">
             <div v-if="privateCamera" class="chat-dialog__camera">
               <PrivateCamera
@@ -19,11 +19,12 @@
                     :room="data.username"
                     :callee="data.callee"
                     :videoAnswer="videoAnswer"
+                    @closeCall="onCloseCall"
               >
               </PrivateCamera>
             </div>
             <div v-else class="chat-dialog__camera">
-                <button @click="startCamera">Turn on camera</button>
+                <button v-if="canWrite"  @click="startCamera">Turn on camera</button>
             </div>
 
             <div class="chat-window">
@@ -49,7 +50,7 @@
                         </div>
                         <div class="panel-footer">
                             <div class="input-group">
-                                <input v-on:keyup.enter="submit" v-model="msg" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." />
+                                <input v-on:keyup.enter="submit" :disabled="!canWrite" v-model="msg" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." />
                                 <span class="input-group-btn">
                                   <button v-on:click="submit" class="btn btn-primary btn-sm" id="btn-chat">Send</button>
                                 </span>
@@ -85,6 +86,7 @@ export default {
       msg : '',
       messages: [],
       privateCamera: false,
+      canWrite : true,
       videoAnswer: {
         video: undefined,
         remoteDesc: undefined,
@@ -98,13 +100,16 @@ export default {
         setTimeout( () => {
           this.$refs.messagesBody.scrollTop = this.$refs.messagesBody.scrollHeight
         },100)
+
+        if ( this.messages.length > 30 )
+           this.$delete(this.messages, 0)
     }
   },
 
   sockets: {
 
       privateMessage : function( { from, to , message, status  } ) {
-          if ( from == this.data.username ) {
+          if ( from == this.data.username && this.canWrite ) {
             this.messages.push({
                         type : 'RECEIVED',
                         cnt : this.cnt,
@@ -116,7 +121,23 @@ export default {
           }
       },
 
-       PCSignaling: function({ target , from, candidate, sdp, type, room }) {
+
+      closePrivateChat : function( {from, target} ) {
+          if ( from == this.data.username ) {
+              this.canWrite = false
+              this.privateCamera = false
+              this.messages.push({
+                        type : 'RECEIVED',
+                        cnt : this.cnt,
+                        message : `${from} is left the private chat`,
+                        username: 'SYSTEM',
+                        time: new Date()
+              })
+
+          }
+      },
+
+      PCSignaling: function({ target , from, candidate, sdp, type, room }) {
           if (from === this.$store.state.username) return
 
           if (sdp) {
@@ -134,6 +155,7 @@ export default {
                 console.log(candidate)
                 this.videoAnswer = { ...this.videoAnswer, candidate }
           } else {
+                this.videoAnswer = { ...this.videoAnswer, video: undefined, remoteDesc: undefined, from: undefined }
                 this.privateCamera = false
           }
        }
@@ -189,8 +211,12 @@ export default {
         this.$emit('close', this.data)
       },
 
-      closePrivate() {
+      onCloseCall() {
+         this.privateCamera = false;
+      },
 
+      closePrivate() {
+        this.$socket.emit(EVENTS.CLOSE_PRIVATE , { from:  this.$store.getters.getUserName, target: this.data.username })
       },
 
       submit(e) {

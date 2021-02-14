@@ -46,7 +46,7 @@ const onConnection = (socket) => {
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
     socket.on('privateMessage', events.privateMessage(socket, namespace))
     socket.on('PCSignaling', events.PCSignaling(socket, namespace));
-
+    socket.on('closePrivateChat', events.closePrivateChat(socket, namespace));
 
     socket.on('disconnect', async () => {
       console.log(`User "${userName}" leaves the chat`)

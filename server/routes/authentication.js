@@ -25,7 +25,7 @@ AuthenticationRouter.post('/login', (req, res) => {
     }
 
     // FOR TEST
-    redis.deleteUser(data.username, config.KEY)
+    //redis.deleteUser(data.username, config.KEY)
 
     // The given user name is already used by somebody
     console.log(`User ${data.username} already exists`)

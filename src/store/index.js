@@ -6,7 +6,7 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 
-import { STATUS, URL , ACTIONS } from '../config'
+import { STATUS, URL , ACTIONS, CHAT_TYPE } from '../config'
 
 
 /**
@@ -18,7 +18,9 @@ export default new Vuex.Store({
     authenticated : false,
     room: undefined,
     username: undefined,
+    darktheme : false,
     status: STATUS.AVAILABLE,
+    chatType : CHAT_TYPE.TYPE_MESSENGER,
     count : 0,
     msg : { type: '', username: '', message:'', time:'' },
     rooms: [],
@@ -70,6 +72,14 @@ export default new Vuex.Store({
       o.key = state.count
       state.msg = o;
       state.public[state.room].messages.push(state.msg)
+    },
+
+    setChatType(state,o) {
+      state.chatType = o;
+    },
+
+    setDarktheme(state,o) {
+      state.darktheme = o
     }
 
   },
@@ -98,8 +108,12 @@ export default new Vuex.Store({
       commit('removeUser', userName)
     },
 
+    updateDark({commit}, dark) {
+      commit('setDarktheme', dark)
+    },
+
     updateUsers({commit}, users ) {
-        commit('setUsers', users)
+      commit('setUsers', users)
     },
 
     addUser({commit}, user) {
@@ -108,6 +122,10 @@ export default new Vuex.Store({
 
     updateRoom( state, room ) {
         state.commit('setRoom', room)
+    },
+
+    updateChatType({commit},type) {
+       commit('setChatType', type)
     },
 
     async rooms({ commit }) {
@@ -135,6 +153,8 @@ export default new Vuex.Store({
      getUserName : state => state.username,
      getUserStatus : state => state.status,
      getAuthenticated : state => state.authenticated,
-     getUsers : state => state.users
+     getUsers : state => state.users,
+     getDarktheme : state => state.darktheme,
+     getChatType : state => state.chatType
   }
 })

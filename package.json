@@ -8,8 +8,8 @@
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "server": "node ./server/index.js",
     "debug": "node --inspect=0.0.0.0:9229 ./server/index.js",
-    "production-start" : "node web-prod.js",
-    "production-build" : "webpack --config build/webpack.prod.conf.js",
+    "production-start": "node web-prod.js",
+    "production-build": "webpack --config build/webpack.prod.conf.js",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "node build/build.js"
@@ -19,6 +19,7 @@
     "bootstrap": "^4.5.3",
     "bootstrap-css": "^4.0.0-alpha.5",
     "bootstrap-vue": "^2.18.1",
+    "emoji-mart-vue": "^2.6.6",
     "jquery": "^3.5.1",
     "node-sass": "^4.14.1",
     "path": "^0.12.7",
@@ -29,6 +30,7 @@
     "vue-owl-carousel": "^2.0.3",
     "vue-router": "^3.0.1",
     "vue-simple-context-menu": "^3.3.2",
+    "vue-youtube-embed": "^2.2.2",
     "vuex": "^3.5.1"
   },
   "devDependencies": {

@@ -5,7 +5,7 @@
         </b-row>
         <b-collapse id="accordion-users" visible role="tabpanel">
               <div class="inbox_chat">
-                  <div v-for="user in users" class="chat_list active_chat" :key="user.key"
+                  <div v-for="user in items" class="chat_list active_chat" :key="user.key"
                        @click.prevent.stop="handleClick($event, user)"
                   >
                           <div class="chat_people">
@@ -81,8 +81,19 @@ export default {
   },
 
 
+  mounted() {
+      this.items = this.users
+  },
+
+  watch : {
+      users() {
+         this.items = this.users
+      }
+  },
+
 
   data: () => ({
+      items : []
   }),
 
   methods : {
@@ -93,8 +104,19 @@ export default {
         }),
 
         handleClick (event, item) {
-          if ( this.$store.getters.getUserName !== item.name )
+          if ( this.$store.getters.getUserName !== item.name ) {
             this.$refs.userContextMenu.showMenu(event, item)
+            this.$emit('clickOnItem', item )
+          }
+        },
+
+        setFilterValue(val) {
+          if ( val === '' ) {
+            this.items = this.users
+            return
+          }
+
+          this.items = this.users.filter(e =>  e.name.toLowerCase().indexOf(val.toLowerCase()) > -1)
         },
 
         optionClicked (event) {
@@ -115,3 +137,15 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .inbox_chat {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .inbox_people {
+      display: none;
+    }
+  }
+</style>

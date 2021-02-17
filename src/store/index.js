@@ -23,6 +23,7 @@ export default new Vuex.Store({
     chatType : CHAT_TYPE.TYPE_MESSENGER,
     count : 0,
     msg : { type: '', username: '', message:'', time:'' },
+    chatFontColor : '#000000',
     rooms: [],
     public :  {},
     users : [],
@@ -80,6 +81,10 @@ export default new Vuex.Store({
 
     setDarktheme(state,o) {
       state.darktheme = o
+    },
+
+    setChatFontColor(state,o) {
+      state.chatFontColor = o;
     }
 
   },
@@ -124,9 +129,6 @@ export default new Vuex.Store({
         state.commit('setRoom', room)
     },
 
-    updateChatType({commit},type) {
-       commit('setChatType', type)
-    },
 
     async rooms({ commit }) {
       return new Promise(async (resolve, reject) => {
@@ -155,6 +157,7 @@ export default new Vuex.Store({
      getAuthenticated : state => state.authenticated,
      getUsers : state => state.users,
      getDarktheme : state => state.darktheme,
-     getChatType : state => state.chatType
+     getChatType : state => state.chatType,
+     getChatFontColor : state => state.chatFontColor
   }
 })

@@ -202,9 +202,11 @@ const closePrivateChat = (socket, namespace) => async ({ from, target }) => {
  * The current message is going to be broadcasted for all the users who are already in the specified room
  * @param namespace
  */
-const publicMessage = (namespace) => ({ room, message, username }) => {
+const publicMessage = (namespace) => async ({ room, message, username, color  }) => {
   console.log(`[EVENT] Public messsage, room : ${room} , message: ${message} , username : ${username} `)
-  namespace.in(room).emit('publicMessage', { message, username })
+  const user = await redis.getUser(username)
+  if ( user )
+    namespace.in(room).emit('publicMessage', { room, message, username, color })
 }
 
 

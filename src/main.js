@@ -6,6 +6,7 @@ import router from './router'
 import store from './store'
 import VueMoment from 'vue-moment'
 import VueResource from 'vue-resource'
+import 'vue-swatches/dist/vue-swatches.css'
 import './styles/vars.scss'
 import './styles/app.scss'
 import 'bootstrap/dist/css/bootstrap.css'
@@ -16,6 +17,7 @@ import '@fortawesome/fontawesome-free/js/all.js'
 import { URL } from './config'
 import VueSocketIO from 'vue-socket.io'
 import io from 'socket.io-client'
+
 
 window.jQuery = require('jquery')
 Vue.config.productionTip = false

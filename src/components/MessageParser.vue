@@ -2,7 +2,7 @@
    <div>
      <span v-for="(e, ix) in data" :key="'smiley_'+ix">
         <span v-if="e.type === 'text' && e.data !== null"> {{e.data}} </span>
-        <span v-else-if="e.type === 'smiley' && e.data !== null"><Emoji set="messenger" :emoji="e.data"></Emoji></span>
+        <span v-else-if="e.type === 'smiley' && e.data !== null"><Emoji :size="chatType === walltype.TYPE_WALL ? 16 : 24" set="messenger" :emoji="e.data"></Emoji></span>
         <span v-else-if="e.type === 'youtube' && e.data !== null"><youtube player-width=320 player-height=240 :video-id="e.data"></youtube></span>
         <span v-else-if="e.type === 'link' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank">{{e.data}}</a></span>
      </span>
@@ -12,12 +12,24 @@
 <script>
 import { Emoji, NimbleEmojiIndex } from 'emoji-mart-vue'
 import data from 'emoji-mart-vue/data/messenger'
+import { mapGetters } from 'vuex';
+import { CHAT_TYPE } from '../config';
 
 export default {
 
   data : () => ({
      data : []
   }),
+
+   computed : {
+        ...mapGetters( {
+              chatType : 'getChatType'
+        }),
+
+        walltype() {
+          return CHAT_TYPE
+        }
+  },
 
   props: {
       msg : {

@@ -38,11 +38,11 @@
         </div>
     </div>
     <div v-else-if="chatType === walltype.TYPE_WALL">
-         <div ref="wallContainer" v-for="msg in messages" class="col-12 wall-container" :key="msg.key">
+         <div ref="wallContainer" v-for="msg in messages" class="col-12 wall-msg-panel" :key="msg.key">
               <div v-if="msg.type === 'incoming' || msg.type === 'sent'" class="msg-panel">
                       <span class="time_date">[{{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }}]</span>
-                      <span class="msg_user_name" @click="clickOnUserName(msg.username)" >[{{ msg.username }}]:</span>
-                      <span class="chat_message"><MessageParser :msg="msg.message"/> </span>
+                      <span class="msg_user_name" :style="`color:${msg.color};font-weight:bold;`"  @click="clickOnUserName(msg.username)" >[{{ msg.username }}]:</span>
+                      <span class="chat_message" :style="`color:${msg.color};font-weight:bold;`" ><MessageParser :msg="msg.message"/> </span>
               </div>
               <div v-else-if="msg.type === 'system'" class="msg-panel">
                       <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
@@ -69,12 +69,13 @@ export default {
   }),
 
   sockets: {
-      publicMessage : function(  {  message, username } ) {
+      publicMessage : function(  {  message, username, color } ) {
           this.addMessage({
                   type : 'incoming',
                   username: username,
                   message : message,
-                  time: new Date()
+                  time: new Date(),
+                  color: color
           })
       }
   },
@@ -89,7 +90,7 @@ export default {
               user : 'getUserName',
               roomId : 'getRoom',
               chatType : 'getChatType'
-        }  ),
+        }),
 
         msg() {
           return this.$store.state.msg;
@@ -107,7 +108,7 @@ export default {
        this.messages = this.$store.state.public[ this.$store.state.room ].messages
        this.$emit('onChange', newv ,oldv )
 
-       if ( this.messages.length > 30 )
+       if ( this.messages.length > 60 )
            this.$delete(this.messages, 0)
 
     },

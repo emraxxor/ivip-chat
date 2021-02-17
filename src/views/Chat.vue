@@ -36,6 +36,9 @@
                 />
               </div>
               <input maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
+              <div v-if="chatType === 'WALL'" class="color-picker">
+                    <v-swatches :swatch-style="{width: '20px', height: '20px'}" popover-x="left" swatches="text-advanced" v-model="swatchColor"></v-swatches>
+              </div>
               <button class="msg_chat_btn" style="right:105px" @click="toogleChatType" type="button"><i class="fa fa-th" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:70px" @click="toogleDarkTheme" type="button"><i class="fa fa-eye" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:35px" @click="toogleSmiley" type="button"><i class="fa fa-smile" aria-hidden="true"></i></button>
@@ -72,7 +75,12 @@
       </Dialog>
   </div>
 
-  <PrivateChat ref="privs" v-for="priv in accepted" @close="privateWindowOnClose" :key="priv.username" :data="priv" title="Private chat">
+  <PrivateChat ref="privs"
+               v-for="priv in accepted"
+               @close="privateWindowOnClose"
+               :key="priv.username"
+               :data="priv"
+               title="Private chat">
   </PrivateChat>
 
 </div>
@@ -88,6 +96,8 @@ import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
 import { Picker } from 'emoji-mart-vue'
+import VSwatches from 'vue-swatches'
+
 
 
 /**
@@ -100,6 +110,7 @@ export default {
       notices : [],
       accepted : [],
       webcams : [],
+      swatchColor: '#000000',
       displaySmileyPicker : false,
   }),
 
@@ -111,7 +122,8 @@ export default {
               userStatus : 'getUserStatus',
               isAuthenticated : 'getAuthenticated',
               darktheme : 'getDarktheme',
-              chatType : 'getChatType'
+              chatType : 'getChatType',
+              chatFontColor: 'getChatFontColor'
       } ),
   },
 
@@ -120,7 +132,8 @@ export default {
     Dialog,
     UserList,
     PrivateChat,
-    Picker
+    Picker,
+    VSwatches
   },
 
   sockets: {
@@ -139,7 +152,9 @@ export default {
   },
 
   watch : {
-
+     swatchColor() {
+       this.$store.commit('setChatFontColor', this.swatchColor)
+     }
   },
 
   mounted() {
@@ -147,9 +162,8 @@ export default {
 
   methods :  {
     ...mapActions({
-                    submitMessage : 'addMessage',
-                    setDarkTheme : 'updateDark',
-                    updateChatType : 'updateChatType'
+                    submitMessage: 'addMessage',
+                    setDarkTheme: 'updateDark'
     }),
 
     toogleDarkTheme() {
@@ -164,9 +178,9 @@ export default {
 
     toogleChatType() {
         if ( this.chatType === CHAT_TYPE.TYPE_MESSENGER ) {
-           this.updateChatType(CHAT_TYPE.TYPE_WALL)
+           this.$store.commit('setChatType',  CHAT_TYPE.TYPE_WALL )
         } else {
-           this.updateChatType(CHAT_TYPE.TYPE_MESSENGER)
+           this.$store.commit('setChatType',  CHAT_TYPE.TYPE_MESSENGER )
         }
     },
 
@@ -221,9 +235,9 @@ export default {
 
     onNoticeDecline : function(item) {
       if ( item.type == 'ask_private' ) {
-        this.$socket.emit(EVENTS.DECLINE_PRIVATE ,  { to : item.username , from : item.to, type : 'decline_private' }  )
+         this.$socket.emit(EVENTS.DECLINE_PRIVATE, { to : item.username , from : item.to, type : 'decline_private' }  )
       } else if ( item.type == 'ask_camera' ) {
-         this.$socket.emit(EVENTS.DECLINE_CAMERA ,  { to : item.username , from : item.to, type : 'decline_camera' }  )
+         this.$socket.emit(EVENTS.DECLINE_CAMERA,  { to : item.username , from : item.to, type : 'decline_camera' }  )
       }
       this.notices = this.notices.filter(e => e.username !== item.username)
     },
@@ -237,14 +251,16 @@ export default {
         this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
           room: this.$store.getters.getRoom,
           username : this.$store.getters.getUserName,
-          message: this.msg
+          message: this.msg,
+          color: this.chatFontColor
         })
 
         this.submitMessage({
                   type : 'sent',
                   message : this.msg,
                   username: this.$store.getters.getUserName,
-                  time: new Date()
+                  time: new Date(),
+                  color: this.chatFontColor
         })
         this.msg = ''
       }

@@ -1,11 +1,13 @@
 <template>
-      <div no-body class="">
+  <div no-body>
         <b-row header-tag="header" role="tab">
-          <b-button block v-b-toggle.accordion-users >Users</b-button>
+          <b-button block @click="onButtonClick($event)" >Users</b-button>
         </b-row>
-        <b-collapse id="accordion-users" visible role="tabpanel">
+        <b-collapse v-if="display" visible role="tabpanel">
               <div class="inbox_chat">
-                  <div v-for="user in items" class="chat_list active_chat" :key="user.key"
+                  <div  v-for="user in items"
+                        class="chat_list active_chat"
+                       :key="user.key"
                        @click.prevent.stop="handleClick($event, user)"
                   >
                           <div class="chat_people">
@@ -16,47 +18,58 @@
                           </div>
                   </div>
               </div>
+              <vue-simple-context-menu
+                  :elementId="'UserContextMenu'"
+                  :options="options"
+                  :ref="'userContextMenu'"
+                  @option-clicked="optionClicked"
+                />
         </b-collapse>
-        <vue-simple-context-menu
-            :elementId="'UserContextMenu'"
-            :options="options"
-            :ref="'userContextMenu'"
-            @option-clicked="optionClicked"
-          />
-      </div>
+  </div>
 </template>
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import { EVENTS } from "../config"
+import ToggleComponentVue from './ToggleComponent.vue'
 
 
 export default {
 
+  mixins: [ToggleComponentVue],
+
   components : {
-    'vue-simple-context-menu' : VueSimpleContextMenu
+    VueSimpleContextMenu
   },
 
-  sockets: {
+  props : {
+      parent : {
+        required: true
+      }
+  },
 
-       userJoinedToRoom : function(  { users, username } ) {
+  data: () => ({
+      items : [],
+      display : true
+  }),
+
+  sockets: {
+      userJoinedToRoom : function(  { users, username } ) {
             this.updateUsers( users.map( e => {
               return {
                   name: e.username,
                   private : e.privateChat
               }
-            })  );
+            }) );
 
-
-          this.submitMessage( { username : 'system', message :  `${username} is joined to room.`, type: 'system' } )
+            this.submitMessage( { username : 'system', message :  `${username} is joined to room.`, type: 'system' } )
       },
 
       leaveChat : function( {users, username} ) {
           this.removeUser(username)
           this.submitMessage( {  username : 'system', message :  `${username} is leaving the chat.`, type: 'system' } )
       }
-
   },
 
   computed : {
@@ -67,11 +80,7 @@ export default {
             {
                name : 'Private chat',
                value : 'private',
-            },/*
-            {
-               name : 'Webcam',
-               value : 'camera',
-            },*/
+            },
             {
                name : 'Ignore/Unignore',
                value : 'ignore'
@@ -80,9 +89,8 @@ export default {
       }
   },
 
-
   mounted() {
-      this.items = this.users
+         this.items = this.users
   },
 
   watch : {
@@ -90,11 +98,6 @@ export default {
          this.items = this.users
       }
   },
-
-
-  data: () => ({
-      items : []
-  }),
 
   methods : {
         ...mapActions({
@@ -132,8 +135,6 @@ export default {
             })
           }
         }
-
-
   }
 }
 </script>

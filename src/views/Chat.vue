@@ -18,20 +18,23 @@
             </div>
           </div>
           <div ref="accordion" class="accordion" role="tablist">
-             <UserList ref="userlist" @clickOnItem="onClickUserItem"></UserList>
+             <div no-body class="">
+                 <user-list :parent="$refs" ref="userlist" @clickOnItem="onClickUserItem"></user-list>
+                 <private-list :parent="$refs" ref="privatelist" :items="accepted" ></private-list>
+             </div>
           </div>
         </div>
-        <div class="mesgs">
+        <div ref="messages" class="mesgs">
           <div class="msg_history" ref="messagePanel" @click="displaySmileyPicker ? toogleSmiley() : {} ">
-             <MessageVue
+             <message-vue
                 @onChange="onChangeMessagePanel"
                 @clickOnUserName="onClickUserName"
-             ></MessageVue>
+             ></message-vue>
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
               <div v-if="displaySmileyPicker">
-                <Picker :include="['people']" set='messenger'  title="Pick your emoji…" emoji="point_up"  @select="addSmiley"
+                <picker :include="['people']" set='messenger'  title="Pick your emoji…" emoji="point_up"  @select="addSmiley"
                         :style="{ position: 'absolute', bottom: '20px', right: '20px' }"
                 />
               </div>
@@ -75,13 +78,13 @@
       </Dialog>
   </div>
 
-  <PrivateChat ref="privs"
+  <private-chat ref="privs"
                v-for="priv in accepted"
                @close="privateWindowOnClose"
                :key="priv.username"
                :data="priv"
                title="Private chat">
-  </PrivateChat>
+  </private-chat>
 
 </div>
 
@@ -91,12 +94,14 @@
 import '../styles/chat.scss';
 import { CHAT_TYPE, EVENTS } from "../config"
 import { mapActions, mapGetters } from 'vuex'
+import { Picker } from 'emoji-mart-vue'
 import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
-import { Picker } from 'emoji-mart-vue'
 import VSwatches from 'vue-swatches'
+import PrivateList from '../components/PrivateList.vue';
+import ChatPanel from './ChatPanel.vue';
 
 
 
@@ -127,13 +132,17 @@ export default {
       } ),
   },
 
+  mixins: [ChatPanel],
+
   components : {
     MessageVue,
     Dialog,
     UserList,
     PrivateChat,
+    PrivateList,
     Picker,
-    VSwatches
+    VSwatches,
+    PrivateList
   },
 
   sockets: {
@@ -157,13 +166,14 @@ export default {
      }
   },
 
-  mounted() {
-  },
+  created() {},
+
+  mounted() {},
 
   methods :  {
     ...mapActions({
                     submitMessage: 'addMessage',
-                    setDarkTheme: 'updateDark'
+                    setDarkTheme:  'updateDark'
     }),
 
     toogleDarkTheme() {
@@ -225,7 +235,7 @@ export default {
          this.$refs.usercamera.offer(item.username)
          this.$socket.emit(EVENTS.ACCEPT_CAMERA ,   { to : item.username , from : item.to , type : 'accept_camera' }  )
       } else if ( item.type == 'accept_private' ) {
-         this.accepted.push({...item, callee: false})
+         this.accepted.push({...item, minimized: false, callee: false})
       }  else if ( item.type == 'accept_camera' ) {
          this.notices.push(item)
       }

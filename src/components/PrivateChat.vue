@@ -1,15 +1,26 @@
 <template>
 
+<div v-if="display">
 <vue-drag-resize class="dialog-window" ref="dialog"  :w="width" :h="height" :parent="false" >
 
-<div ref="modaldialog" class="modal">
+<div ref="modaldialog" visible class="modal">
 <div class="modal-dialog-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{data.username}}</h5>
-        <button type="button" class="close" data-dismiss="modal"  @click="close($event)" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <div class="row">
+          <div class="col-xs-12 mr-5">
+
+            <div class="text-right">
+            <button type="button" class="btn pull-right" @click="minimize($event)" aria-label="Minimize">
+                  <i class="fas fa-window-minimize"></i>
+            </button>
+            <button type="button" class="close" data-dismiss="modal"  @click="close($event)" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-body chat-dialog">
             <div class="chat-dialog__dialog_container" style="width:100%;">
@@ -66,7 +77,8 @@
 </div>
 
 
-    </vue-drag-resize>
+</vue-drag-resize>
+</div>
 </template>
 <script>
 import { EVENTS, PCSIGNAL } from "../config"
@@ -81,12 +93,28 @@ import PrivateCamera from './PrivateCamera';
  */
 export default {
 
+  props : {
+      title: {
+            default: 'Title'
+      },
+      width: {
+            default : 800,
+      },
+      height: {
+            default: 500
+      },
+      data : {
+            default : {}
+      }
+  },
+
   data : () => ({
       cnt : 0,
       msg : '',
       messages: [],
       privateCamera: false,
       canWrite : true,
+      display: true,
       videoAnswer: {
         video: undefined,
         remoteDesc: undefined,
@@ -95,14 +123,28 @@ export default {
       }
   }),
 
+  components : {
+    'vue-drag-resize' : VueDraggableResizable,
+    PrivateCamera
+  },
+
   watch : {
     messages : function(newv,oldv) {
+      if ( this.display ) {
         setTimeout( () => {
           this.$refs.messagesBody.scrollTop = this.$refs.messagesBody.scrollHeight
         },100)
+      }
 
-        if ( this.messages.length > 30 )
+      if ( this.messages.length > 30 )
            this.$delete(this.messages, 0)
+    },
+
+    data(o,n) {
+      this.display = !n.minimized
+
+      if ( this.display )
+        setTimeout( () => this.$refs.dialog.$el.style.transform = "translate(-50%,-50%)" , 100 )
     }
   },
 
@@ -117,7 +159,9 @@ export default {
                         username: from,
                         time: new Date()
             })
-            this.cnt++;
+            this.cnt++
+            this.data.msgcnt++
+            this.data.__ob__.dep.notify()
           }
       },
 
@@ -180,22 +224,6 @@ export default {
     this.closePrivate()
   },
 
-  props : {
-      title: {
-            default: 'Title'
-      },
-      width: {
-            default : 800,
-      },
-      height: {
-            default: 500
-      },
-      data : {
-            default : {}
-      }
-  },
-
-
   methods : {
 
       openCamera(sdp, from){
@@ -217,6 +245,13 @@ export default {
 
       closePrivate() {
         this.$socket.emit(EVENTS.CLOSE_PRIVATE , { from:  this.$store.getters.getUserName, target: this.data.username })
+      },
+
+      minimize(event) {
+          this.data.minimized = true
+          this.data.msgcnt = 0;
+          this.data.__ob__.dep.notify()
+          this.display = false
       },
 
       submit(e) {
@@ -243,12 +278,6 @@ export default {
        }
 
 
-  },
-
-
-  components : {
-    'vue-drag-resize' : VueDraggableResizable,
-    PrivateCamera
   }
 }
 </script>
@@ -260,8 +289,13 @@ export default {
     transform: translate(-50%, -50%);
   }
 
+
   .chat-window {
     width: 70% !important;
+  }
+
+  .modal {
+    display: block;
   }
 
   .chat-dialog {

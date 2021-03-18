@@ -154,6 +154,12 @@ export default {
           }
       },
 
+      kickUser : function(data) {
+          alert('You are kicked out of chat!')
+          this.$socket.close()
+          this.$store.commit('setAuthenticate', false)
+          this.$router.push('/');
+      }
   },
 
   beforeCreate: function() {
@@ -254,7 +260,6 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
-
         if ( this.displaySmileyPicker  )
           this.toogleSmiley()
 

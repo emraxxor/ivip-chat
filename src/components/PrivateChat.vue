@@ -1,7 +1,7 @@
 <template>
 
 <div v-if="display">
-<vue-drag-resize class="dialog-window" ref="dialog"  :w="width" :h="height" :parent="false" >
+<vue-drag-resize class="dialog-window" ref="dialog" :w="width" :h="height" :parent="false" >
 
 <div ref="modaldialog" visible class="modal">
 <div class="modal-dialog-lg" role="document">

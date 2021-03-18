@@ -1,6 +1,14 @@
 <template>
 <!-- basic template from https://bootsnipp.com/ -->
 <div class="container">
+  <div v-if="error">
+     <dialog-window title="Invalid username or password" open='true' :data="{}" @validate="onDialog" @invalidate="onDialog">
+        <div slot="dialogBody">
+           Invalid username or password or the remote server is unavailable.
+        </div>
+     </dialog-window>
+  </div>
+
 	<div class="d-flex justify-content-center h-100">
 		<div class="card">
 			<div class="card-header">
@@ -17,7 +25,7 @@
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-user"></i></span>
 						</div>
-						<input type="text" class="form-control" maxlength="12"  v-model="username" placeholder="username">
+						<input type="text" class="form-control" maxlength="30"  v-model="username" placeholder="username">
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
@@ -57,14 +65,15 @@
 </div>
 </template>
 <script>
-import { ACTIONS, EVENTS } from "../config"
-import { mapActions, mapGetters } from 'vuex'
-
+import { ACTIONS } from "../config"
+import { mapGetters } from 'vuex'
+import DialogWindow from '../components/DialogWindow.vue'
 
 /**
  * @author Attila Barna
  */
 export default {
+  components: { DialogWindow },
 
 
   sockets: {
@@ -105,16 +114,21 @@ export default {
 
 
   methods: {
+
+    onDialog(data) {
+        this.error = null
+    },
+
     async login() {
 
       if(!(this.username && this.room)) return
       this.error = undefined
 
       try {
-        const data = await this.$store.dispatch(ACTIONS.AUTHENTICATE, {
+        await this.$store.dispatch(ACTIONS.AUTHENTICATE, {
           room: this.room,
           username: this.username,
-          password: this.password
+          password: this.userpassword
         })
 
         this.$store.dispatch( ACTIONS.UPDATE_ROOM, this.room )

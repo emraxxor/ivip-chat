@@ -18,6 +18,7 @@ export default new Vuex.Store({
     authenticated : false,
     room: undefined,
     username: undefined,
+    usergrant : undefined,
     darktheme : false,
     status: STATUS.AVAILABLE,
     chatType : CHAT_TYPE.TYPE_MESSENGER,
@@ -27,9 +28,20 @@ export default new Vuex.Store({
     rooms: [],
     public :  {},
     users : [],
+    ignored : [],
   },
 
   mutations : {
+
+    addIgnored(state, name) {
+      state.ignored.push({
+        name
+      })
+    },
+
+    removeIgnored(state, name) {
+      state.ignored = state.ignored.filter(e => e.name !== name )
+    },
 
     setRooms(state, rooms) {
       state.rooms = rooms
@@ -84,7 +96,11 @@ export default new Vuex.Store({
     },
 
     setChatFontColor(state,o) {
-      state.chatFontColor = o;
+      state.chatFontColor = o
+    },
+
+    setUserGrant(state,o) {
+      state.usergrant = o
     }
 
   },
@@ -94,17 +110,18 @@ export default new Vuex.Store({
       state.commit('addMessage', o )
     },
 
-
     async authenticate(state, data) {
       return new Promise(async (resolve, reject) => {
         const { body } = await Vue.http.post(`${URL}/authentication/login`, data)
 
-        if (body.code === 400 || body.code === 401 || body.code === 500)
+        if (body.code === 400 || body.code === 401 || body.code === 402 || body.code === 500) {
           reject({ message: body.message })
-
-        state.commit('setAuthenticate', true)
-        state.commit('setUserName', body.data.username)
-        resolve(body.data)
+        } else {
+          state.commit('setAuthenticate', true)
+          state.commit('setUserName', body.data.username)
+          state.commit('setUserGrant', body.data.grant)
+          resolve(body.data)
+        }
       })
 
     },

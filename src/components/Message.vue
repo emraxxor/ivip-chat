@@ -70,6 +70,10 @@ export default {
 
   sockets: {
       publicMessage : function(  {  message, username, color } ) {
+
+          if ( this.$store.state.ignored.filter( e => e.name === username).length > 0 )
+            return
+
           this.addMessage({
                   type : 'incoming',
                   username: username,

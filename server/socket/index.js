@@ -6,15 +6,19 @@ const redis = require('../redis')
 let namespace
 
 // on Connection
-const onConnection = (socket) => {
+const onConnection = async (socket) => {
   console.log(`Socket connected to port ${config.PORT}`)
 
   let userRoom, userName, userStatus
   const clientIp = socket.request.connection.remoteAddress;
 
 
-    socket.on('joinRoom', ({ username, room, status }) => {
+    socket.on('joinRoom', async ({ username, room, status }) => {
       console.log(`[SOCKET] User ${username} - ${clientIp} wants to join the room ${room}`)
+      const udata = (await redis.getUser(username))
+
+      if ( !udata )
+        return
 
       socket.join(room, async () => {
           console.log(`User ${username} joined the room ${room}`)
@@ -23,7 +27,6 @@ const onConnection = (socket) => {
           userStatus = status
 
           try {
-              await redis.addUser(room, userName, { username, status  })
               const users = await redis.usersByRoom(room)
               namespace.in(room).emit('userJoinedToRoom', { users, username })
           } catch (error) {
@@ -46,7 +49,17 @@ const onConnection = (socket) => {
     socket.on('leaveRoom', events.leaveRoom(socket, namespace))
     socket.on('privateMessage', events.privateMessage(socket, namespace))
     socket.on('PCSignaling', events.PCSignaling(socket, namespace));
-    socket.on('closePrivateChat', events.closePrivateChat(socket, namespace));
+    socket.on('closePrivateChat',  events.closePrivateChat(socket, namespace));
+
+    socket.on('kickUser', async({user,room}) => {
+      const udata = await redis.getUser(userName)
+      console.log(`[EVENT] Kick user, room : ${room} , Moderator: ${userName},  user : ${user} `)
+
+      if ( udata.grant === 'admin' )
+        namespace.in(`user:${user}`).emit('kickUser',  { user, room })
+    });
+
+
 
     socket.on('disconnect', async () => {
       console.log(`User "${userName}" leaves the chat`)

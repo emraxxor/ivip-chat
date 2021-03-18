@@ -76,7 +76,7 @@ export default {
       ...mapGetters( { users : 'getUsers' } ),
 
       options : function() {
-        return [
+        const data = [
             {
                name : 'Private chat',
                value : 'private',
@@ -86,6 +86,15 @@ export default {
                value : 'ignore'
             }
         ]
+
+        if ( this.$store.state.usergrant === 'admin' ) {
+          data.push({
+             name : 'Kick',
+             value: 'kick'
+          })
+        }
+
+        return data
       }
   },
 
@@ -133,6 +142,19 @@ export default {
               ...Object.keys( this.$store.state ).reduce( (res,key) => (  res[key] = this.$store.state[key]  , res ) , {}    ),
               to : event.item.name
             })
+          } else if ( event.option.value === 'ignore') {
+              console.log(event.item.name)
+              if ( this.$store.state.ignored.filter(e => e.name === event.item.name).length === 0 ) {
+                  alert("Ignored")
+                  this.$store.commit('addIgnored', event.item.name)
+              } else {
+                  alert("Unignored")
+                  this.$store.commit('removeIgnored', event.item.name)
+              }
+          } else if ( event.option.value === 'kick') {
+              this.$socket.emit(EVENTS.KICK_USER , {
+                  user: event.item.name, room: this.$store.state.room
+              })
           }
         }
   }

@@ -17,6 +17,8 @@ export const EVENTS = {
   SUBMIT_MESSAGE : 'publicMessage',
   ASK_PRIVATE : 'askPrivate',
   ASK_CAMERA : 'askCamera',
+  KICK_USER: 'kickUser',
+  DISCONNECT: 'disconnect',
   SEND_PRIVATE_MESSAGE : 'privateMessage',
   PC_SIGNALING : 'PCSignaling',
   CLOSE_PRIVATE : 'closePrivateChat'

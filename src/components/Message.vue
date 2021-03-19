@@ -6,7 +6,7 @@
 
             <div class="incoming_msg_img">
               <img
-                src="../assets/user-profile.png"
+                :src="`${url}/user/image/${msg.username}`"
                 alt="sunil"
               />
             </div>
@@ -39,12 +39,12 @@
     </div>
     <div v-else-if="chatType === walltype.TYPE_WALL">
          <div ref="wallContainer" v-for="msg in messages" class="col-12 wall-msg-panel" :key="msg.key">
-              <div v-if="msg.type === 'incoming' || msg.type === 'sent'" class="msg-panel">
+              <div v-if="msg.type === 'incoming' || msg.type === 'sent'" class="msg-panel" :style=" { fontSize: settings.fontSize + 'px' } ">
                       <span class="time_date">[{{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }}]</span>
                       <span class="msg_user_name" :style="`color:${msg.color};font-weight:bold;`"  @click="clickOnUserName(msg.username)" >[{{ msg.username }}]:</span>
                       <span class="chat_message" :style="`color:${msg.color};font-weight:bold;`" ><MessageParser :msg="msg.message"/> </span>
               </div>
-              <div v-else-if="msg.type === 'system'" class="msg-panel">
+              <div v-else-if="msg.type === 'system'" class="msg-panel" :style=" { fontSize: settings.fontSize + 'px' } ">
                       <span class="time_date"> {{ msg.time | moment("YYYY-MM-DD HH:mm:ss") }} </span>
                       <span class="msg_user_name">System message:</span>
                       <span class="chat_message"><MessageParser :msg="msg.message"/> </span>
@@ -59,8 +59,13 @@
 </template>
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { CHAT_TYPE } from '../config';
+import { CHAT_TYPE, EVENTS } from '../config';
+import { URL } from '../config/index'
 import MessageParser from './MessageParser'
+import chatMsgSfx from '../assets/chat.mp3'
+import BaseTabVue from './settings/tabs/BaseTab.vue';
+
+const chatMsgSfxAudio = new Audio(chatMsgSfx);
 
 export default {
 
@@ -68,11 +73,20 @@ export default {
     messages : [],
   }),
 
+  mixins: [BaseTabVue],
+
   sockets: {
       publicMessage : function(  {  message, username, color } ) {
 
           if ( this.$store.state.ignored.filter( e => e.name === username).length > 0 )
             return
+
+          if ( message.indexOf(this.user) !== -1 )
+             chatMsgSfxAudio.play()
+
+          if ( this.settings.awayEnabled )
+              this.sendAwayMessage()
+
 
           this.addMessage({
                   type : 'incoming',
@@ -85,7 +99,7 @@ export default {
   },
 
   components : {
-    MessageParser , CHAT_TYPE
+       MessageParser
   },
 
   computed : {
@@ -93,11 +107,16 @@ export default {
               public : 'getPublic',
               user : 'getUserName',
               roomId : 'getRoom',
-              chatType : 'getChatType'
+              chatType : 'getChatType',
+              settings: 'user/getSettings'
         }),
 
         msg() {
           return this.$store.state.msg;
+        },
+
+        url() {
+          return URL
         },
 
         walltype() {
@@ -119,7 +138,6 @@ export default {
 
 
     chatType() {
-        console.log(this.chatType)
     },
 
     messages() {
@@ -131,8 +149,24 @@ export default {
 
         clickOnUserName(username) {
            this.$emit('clickOnUserName', username )
-        }
+        },
 
+        sendAwayMessage() {
+          this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
+                room: this.$store.getters.getRoom,
+                username : this.$store.getters.getUserName,
+                message: this.settings.awayMessage,
+                color: this.$store.getters.getChatFontColor
+          })
+
+          this.$store.dispatch('addMessage',{
+                type : 'sent',
+                message : this.settings.awayMessage,
+                username: this.$store.getters.getUserName,
+                time: new Date(),
+                color: this.$store.getters.getChatFontColor
+          })
+        }
   },
 
   props: {
@@ -140,7 +174,6 @@ export default {
   },
 
   mounted() {
-
   }
 };
 </script>

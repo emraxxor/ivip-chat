@@ -1,5 +1,3 @@
-import { stat } from 'fs'
-import { resolve } from 'path'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -7,6 +5,7 @@ Vue.use(Vuex)
 
 
 import { STATUS, URL , ACTIONS, CHAT_TYPE } from '../config'
+import UserStore from './modules/UserStore'
 
 
 /**
@@ -28,7 +27,7 @@ export default new Vuex.Store({
     rooms: [],
     public :  {},
     users : [],
-    ignored : [],
+    ignored : []
   },
 
   mutations : {
@@ -101,29 +100,13 @@ export default new Vuex.Store({
 
     setUserGrant(state,o) {
       state.usergrant = o
-    }
+    },
 
   },
 
   actions : {
     async addMessage(state, o ) {
       state.commit('addMessage', o )
-    },
-
-    async authenticate(state, data) {
-      return new Promise(async (resolve, reject) => {
-        const { body } = await Vue.http.post(`${URL}/authentication/login`, data)
-
-        if (body.code === 400 || body.code === 401 || body.code === 402 || body.code === 500) {
-          reject({ message: body.message })
-        } else {
-          state.commit('setAuthenticate', true)
-          state.commit('setUserName', body.data.username)
-          state.commit('setUserGrant', body.data.grant)
-          resolve(body.data)
-        }
-      })
-
     },
 
     removeUser({commit}, userName) {
@@ -146,23 +129,10 @@ export default new Vuex.Store({
         state.commit('setRoom', room)
     },
 
-
-    async rooms({ commit }) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const rooms = await Vue.http.get(`${URL}/rooms`)
-          commit('setRooms', rooms.body)
-          resolve(rooms)
-        } catch (error) {
-          console.error(error)
-          reject(error)
-        }
-      })
-    },
   },
 
   modules : {
-
+      user: UserStore
   },
 
   getters : {
@@ -175,6 +145,6 @@ export default new Vuex.Store({
      getUsers : state => state.users,
      getDarktheme : state => state.darktheme,
      getChatType : state => state.chatType,
-     getChatFontColor : state => state.chatFontColor
+     getChatFontColor : state => state.chatFontColor,
   }
 })

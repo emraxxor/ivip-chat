@@ -1,16 +1,16 @@
 const events = require('./events.js')
-const config = require('../config')
 const redis = require('../redis')
+const { CONFIG, CONFIG_ROOMS } = require('../config/index.js')
 
 // Socket namespace
 let namespace
 
 // on Connection
 const onConnection = async (socket) => {
-  console.log(`Socket connected to port ${config.PORT}`)
+    console.log(`Socket connected to port ${CONFIG.PORT}`)
 
-  let userRoom, userName, userStatus
-  const clientIp = socket.request.connection.remoteAddress;
+    let userRoom, userName, userStatus
+    const clientIp = socket.request.connection.remoteAddress;
 
 
     socket.on('joinRoom', async ({ username, room, status }) => {
@@ -40,6 +40,7 @@ const onConnection = async (socket) => {
 
 
     socket.on('acceptPrivate',  events.acceptPrivate(socket, namespace ) )
+    socket.on('alive',  events.alive(socket, namespace ) )
     socket.on('acceptCamera',  events.acceptCamera(socket, namespace ) )
     socket.on('declinePrivate',  events.declinePrivate(socket, namespace ) )
     socket.on('declineCamera',  events.declineCamera(socket, namespace ) )
@@ -55,8 +56,12 @@ const onConnection = async (socket) => {
       const udata = await redis.getUser(userName)
       console.log(`[EVENT] Kick user, room : ${room} , Moderator: ${userName},  user : ${user} `)
 
-      if ( udata.grant === 'admin' )
+      if ( udata.grant === 'admin' ) {
+        redis.deleteUserFromPrivates(user)
+        redis.deleteUser(user)
+        CONFIG_ROOMS.forEach(e => redis.deleteUserFromRoom(e.id, user ))
         namespace.in(`user:${user}`).emit('kickUser',  { user, room })
+      }
     });
 
 
@@ -78,6 +83,6 @@ const onConnection = async (socket) => {
 exports.createNameSpace = (io) => {
   exports.io = io
   namespace = io
-      .of(config.CHAT_NAMESPACE)
+      .of(CONFIG.CHAT_NAMESPACE)
       .on('connection', onConnection)
 }

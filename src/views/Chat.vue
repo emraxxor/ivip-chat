@@ -38,10 +38,12 @@
                         :style="{ position: 'absolute', bottom: '20px', right: '20px' }"
                 />
               </div>
-              <input maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
+              <input style="right: 175px" maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
               <div v-if="chatType === 'WALL'" class="color-picker">
                     <v-swatches :swatch-style="{width: '20px', height: '20px'}" popover-x="left" swatches="text-advanced" v-model="swatchColor"></v-swatches>
               </div>
+
+              <button class="msg_chat_btn" style="right:140px" @click="toogleSettings" type="button"><i class="fa fa-tools" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:105px" @click="toogleChatType" type="button"><i class="fa fa-th" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:70px" @click="toogleDarkTheme" type="button"><i class="fa fa-eye" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:35px" @click="toogleSmiley" type="button"><i class="fa fa-smile" aria-hidden="true"></i></button>
@@ -54,7 +56,7 @@
     </div>
 
   <div v-for="notice in notices" :key="notice.username">
-      <Dialog :data="notice" title="Private chat" open='true' @validate="onNoticeAccept" @invalidate="onNoticeDecline">
+      <dialog-window :data="notice" title="Private chat" open='true' @validate="onNoticeAccept" @invalidate="onNoticeDecline">
           <div slot="dialogBody">
              <div v-if="notice.type == 'ask_private'">
                    {{ notice.username }} wants to make a private chat with you.
@@ -75,8 +77,14 @@
                    {{ notice.username }} is declined your request.
              </div>
           </div>
-      </Dialog>
+      </dialog-window>
   </div>
+
+  <dialog-window :data="{}" title="The connection is broken" :open="connectionLost">
+      <div slot="dialogBody">
+        The connection with the remote server was lost
+      </div>
+  </dialog-window>
 
   <private-chat ref="privs"
                v-for="priv in accepted"
@@ -85,6 +93,8 @@
                :data="priv"
                title="Private chat">
   </private-chat>
+
+  <settings-window ref="settings"></settings-window>
 
 </div>
 
@@ -99,11 +109,11 @@ import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
-import VSwatches from 'vue-swatches'
 import PrivateList from '../components/PrivateList.vue';
 import ChatPanel from './ChatPanel.vue';
-
-
+import DialogWindow from '../components/DialogWindow.vue';
+import VSwatches from 'vue-swatches';
+import SettingsWindow from '../components/SettingsWindow.vue';
 
 /**
  * @author Attila Barna
@@ -115,6 +125,8 @@ export default {
       notices : [],
       accepted : [],
       webcams : [],
+      connectionLost : false,
+      lastAlive : undefined,
       swatchColor: '#000000',
       displaySmileyPicker : false,
   }),
@@ -141,8 +153,9 @@ export default {
     PrivateChat,
     PrivateList,
     Picker,
+    DialogWindow,
     VSwatches,
-    PrivateList
+    SettingsWindow
   },
 
   sockets: {
@@ -159,6 +172,10 @@ export default {
           this.$socket.close()
           this.$store.commit('setAuthenticate', false)
           this.$router.push('/');
+      },
+
+      alive: function({user}) {
+         this.lastAlive = new Date( new Date().getTime() + (120*1000) )
       }
   },
 
@@ -172,9 +189,23 @@ export default {
      }
   },
 
-  created() {},
+  created() {
+      this.lastAlive = new Date( new Date().getTime() + (120*1000) )
 
-  mounted() {},
+      setInterval(  () => {
+          if ( this.lastAlive < new Date() )
+                this.connectionLost = true
+
+          this.$socket.emit(EVENTS.ALIVE, { user: this.userName })
+
+      } , 30 * 1000)
+  },
+
+  mounted() {
+
+
+
+  },
 
   methods :  {
     ...mapActions({
@@ -190,6 +221,10 @@ export default {
         } else {
            document.body.classList.remove('dark')
         }
+    },
+
+    toogleSettings() {
+      this.$refs.settings.toggle()
     },
 
     toogleChatType() {

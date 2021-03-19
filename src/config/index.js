@@ -1,15 +1,26 @@
 export const URL = `${process.env.VUE_APP_SOCKET_HOST || 'http://localhost'}:${process.env.VUE_APP_SOCKET_PORT || '3000'}`
 
 export const ACTIONS = {
-    AUTHENTICATE : 'authenticate',
+    AUTHENTICATE : 'user/authenticate',
     JOIN_ROOM : 'joinRoom',
-    ROOMS_LIST  : 'rooms',
+    ROOMS_LIST  : 'user/rooms',
     UPDATE_ROOM : 'updateRoom'
 }
 
+export const STORE = {
+  GLOBAL : {
+    root: true
+  },
+  HEADER : {
+    AUTH: {
+      headers: {  Authorization: 'Bearer undefined' }
+    }
+  }
+}
 
 export const EVENTS = {
   JOIN_ROOM: 'joinRoom',
+  ALIVE: 'alive',
   ACCEPT_PRIVATE : 'acceptPrivate',
   ACCEPT_CAMERA : 'acceptCamera',
   DECLINE_PRIVATE : 'declinePrivate',

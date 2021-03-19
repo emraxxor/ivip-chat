@@ -1,22 +1,13 @@
 const express = require('express');
+const { CONFIG_ROOMS } = require('../config');
 const redis = require('../redis')
-const config = require('../config')
 
 const RoomRouter = express.Router()
 module.exports = RoomRouter
 
-
-const rooms = [
-  {
-      id: 'ROOM_ARENA',
-      name: 'Arena'
-  }
-]
-
-
 // route for get rooms
 RoomRouter.get('/', (req,res) => {
-  res.send(rooms)
+  res.send(CONFIG_ROOMS)
 })
 
 module.exports = RoomRouter

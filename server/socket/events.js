@@ -217,6 +217,24 @@ const PCSignaling = (namespace) => ({ target , from, room , candidate ,type, sdp
 }
 
 
+/**
+ *  Alive listener
+ *
+ * @param  socket
+ * @param  namespace
+ */
+const alive = (socket, namespace) => async ({ user }) => {
+  try {
+      const e = await redis.getUser(user)
+      if ( e )
+        namespace.in(`user:${user}`).emit('alive',  { user  } )
+
+  } catch (error) {
+      console.log(error)
+  }
+}
+
+
 module.exports = {
     privateMessage,
     acceptPrivate,
@@ -229,5 +247,6 @@ module.exports = {
     acceptCamera,
     declineCamera,
     PCSignaling,
-    closePrivateChat
+    closePrivateChat,
+    alive
 }

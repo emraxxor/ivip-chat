@@ -11,7 +11,7 @@
                        @click.prevent.stop="handleClick($event, user)"
                   >
                           <div class="chat_people">
-                            <div class="chat_img"> <img src="../assets/user-profile.png" alt="sunil"> </div>
+                            <div class="chat_img"> <img :src="`${url}/user/image/${user.name}`" alt="sunil"> </div>
                             <div class="chat_ib">
                               <h5> {{ user.name }} </h5>
                             </div>
@@ -31,8 +31,9 @@
 import { mapActions, mapGetters } from 'vuex'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
-import { EVENTS } from "../config"
 import ToggleComponentVue from './ToggleComponent.vue'
+import { EVENTS } from "../config"
+import { URL } from '../config/index'
 
 
 export default {
@@ -74,6 +75,10 @@ export default {
 
   computed : {
       ...mapGetters( { users : 'getUsers' } ),
+
+      url() {
+          return URL
+      },
 
       options : function() {
         const data = [

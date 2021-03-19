@@ -65,7 +65,8 @@ export default {
             default:  80,
         },
         data : {
-          default : {}
+          default : () => ({}),
+          required: false
         },
         marginTop : {
             default : '0',

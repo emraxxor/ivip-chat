@@ -1,13 +1,13 @@
 const redis = require('redis')
 const bluebird = require('bluebird')
-const config = require('../config')
+const { CONFIG } = require('../config')
 
 // Using promises
 bluebird.promisifyAll(redis)
 
 function Redis() {
   this.client = redis.createClient({
-      host: config.REDIS_HOST
+      host: CONFIG.REDIS_HOST
   })
 }
 
@@ -187,6 +187,12 @@ Redis.prototype.deleteUserFromPrivates = function (username) {
  * Delete the given user from the room
  */
 Redis.prototype.deleteUserFromRoom = function (room, uid) {
+  if ( !room || !uid )
+    return
+
+  if ( !this.getUserByRoom(room,uid) )
+    return
+
   this.client
       .hdelAsync(room, uid)
       .then(

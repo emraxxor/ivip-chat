@@ -9,8 +9,10 @@ const user = require('./routes/user')
 const rooms = require('./routes/room')
 const socket = require('./socket')
 
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(cors())
-app.use(bodyParser.json())
+
 
 // MIDDLEWARE
 app.use((req, res, next) => {

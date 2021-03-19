@@ -6,7 +6,21 @@ const CONFIG = {
   ORIGINS: process.env.ORIGINS || '*:*',
 
   // This key have to be hard to guess!
-  KEY: 'unique'
+  KEY: 'secret'
 }
 
-module.exports = CONFIG
+const DATASTORE = {
+   USER: {
+      PROFILE : '/datastore/profile'
+   }
+}
+
+
+const CONFIG_ROOMS = [
+  {
+      id: 'ROOM_ARENA',
+      name: 'Arena'
+  }
+]
+
+module.exports = { CONFIG, CONFIG_ROOMS, DATASTORE }

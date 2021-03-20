@@ -25,7 +25,7 @@
                     label="Enter your nickname:"
                     label-for="input-name"
                   >
-                    <b-form-input placeholder="Your nickname" id="input-name" v-model="name" :state="name.length > 4" trim></b-form-input>
+                    <b-form-input placeholder="Your nickname" id="input-name" v-model="name" :state="validName" trim></b-form-input>
                 </b-form-group>
 
                  <b-form-group
@@ -74,11 +74,16 @@
 import DialogWindow from '../components/DialogWindow.vue'
 
 const emailExpression = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/
+const nameExpression = /^([a-zA-Z0-9]*)$/
 
 export default {
     components: { DialogWindow },
 
     computed: {
+        validName() {
+           return this.name.length > 4 && nameExpression.test(this.name) && this.name.length < 16
+        },
+
         validEmail() {
            return emailExpression.test(this.email) && this.email === this.emailAgain
         },
@@ -104,7 +109,7 @@ export default {
     methods: {
       async registration() {
 
-           if ( this.name.length > 4 && this.validEmail && this.validPassword ) {
+           if ( this.validName && this.validEmail && this.validPassword ) {
              try {
                  const data = await this.$store.dispatch('user/registration', {
                      name: this.name,

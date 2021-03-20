@@ -54,11 +54,15 @@ align-content: center;
 }
 
 .card{
-max-height: 370px;
-margin-top: auto;
-margin-bottom: auto;
-width: 400px;
-background-color: rgba(0,0,0,0.5) !important;
+  max-height: 370px;
+  margin-top: auto;
+  margin-bottom: auto;
+  width: 400px;
+  background-color: rgba(0,0,0,0.5) !important;
+
+  small.text-muted {
+    color: black !important;
+  }
 }
 
 .social_icon span{

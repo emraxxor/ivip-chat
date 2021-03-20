@@ -90,7 +90,7 @@ Redis.prototype.getUser = async function (uid) {
 Redis.prototype.alive = async function (uid) {
   const user = this.getUser(uid)
   if ( user ) {
-    user.alive = new Date( new Date().getTime() + (120*1000) )
+    user.alive = new Date( new Date().getTime() + (400*1000) )
 
     this.client
     .hsetAsync('users', uid , JSON.stringify(user))

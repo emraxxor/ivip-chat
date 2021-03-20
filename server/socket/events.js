@@ -226,9 +226,10 @@ const PCSignaling = (namespace) => ({ target , from, room , candidate ,type, sdp
 const alive = (socket, namespace) => async ({ user }) => {
   try {
       const e = await redis.getUser(user)
-      if ( e )
+      if ( e ) {
+        await redis.alive(user)
         namespace.in(`user:${user}`).emit('alive',  { user  } )
-
+      }
   } catch (error) {
       console.log(error)
   }

@@ -11,7 +11,7 @@
             </dialog-window>
             Youtube: {{e.orig}}
         </span>
-        <span v-else-if="e.type === 'image' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank"><img class="fluid resposinve" style="max-width: 200px" :src="e.data"/></a></span>
+        <span v-else-if="e.type === 'image' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank"><img class="fluid resposinve" style="max-width: 100px" :src="e.data"/></a></span>
         <span v-else-if="e.type === 'link' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank">{{e.data}}</a></span>
      </span>
 

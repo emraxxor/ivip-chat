@@ -18,6 +18,19 @@ UserRouter.put('/image', DefaultJwtMiddleWare , async (req, res) =>  {
 })
 
 
+UserRouter.post('/registration',  async (req, res) =>  {
+  const { body } = req
+  body['ip'] = req.headers['x-forwarded-for'] || req.ip;
+
+  if ( body.name && body.password && body.email  ) {
+    const data = await UserService.registration(body)
+    return res.status(200).send({ code: 200, message: 'OK' , data })
+  } else {
+    return res.status(404).send({ code: 404, message: 'Not found' })
+  }
+})
+
+
 UserRouter.get('/image/:name', async (req, res) =>  {
   const name = req.params.name
 

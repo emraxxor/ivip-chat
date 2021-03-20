@@ -57,9 +57,9 @@ const onConnection = async (socket) => {
       console.log(`[EVENT] Kick user, room : ${room} , Moderator: ${userName},  user : ${user} `)
 
       if ( udata.grant === 'admin' ) {
-        redis.deleteUserFromPrivates(user)
-        redis.deleteUser(user)
-        CONFIG_ROOMS.forEach(e => redis.deleteUserFromRoom(e.id, user ))
+        await redis.deleteUserFromPrivates(user)
+        await redis.deleteUser(user)
+        await CONFIG_ROOMS.forEach(e => redis.deleteUserFromRoom(e.id, user ))
         namespace.in(`user:${user}`).emit('kickUser',  { user, room })
       }
     });

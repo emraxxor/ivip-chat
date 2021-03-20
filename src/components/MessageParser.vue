@@ -11,6 +11,7 @@
             </dialog-window>
             Youtube: {{e.orig}}
         </span>
+        <span v-else-if="e.type === 'image' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank"><img class="fluid resposinve" style="max-width: 200px" :src="e.data"/></a></span>
         <span v-else-if="e.type === 'link' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank">{{e.data}}</a></span>
      </span>
 
@@ -84,10 +85,10 @@ export default {
 
 
       parseMessage() {
-
         const words = this.msg.split(" ")
         const emojiIndex = new NimbleEmojiIndex(data)
-        let res = this.msg.match(new RegExp(/:[^:\s]*(?:::[^:\s]*)*:/g));
+        const extension = /(?:\.([^.]+))?$/
+        let res = this.msg.match(new RegExp(/:[^:\s]*(?:::[^:\s]*)*:/g))
         let urls = this.msg.match(new RegExp(
           "(^|[ \t\r\n])((http|https):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))"
          ,"g"
@@ -118,7 +119,13 @@ export default {
                        this.data.push({type:'youtube', data: yid, orig: word})
                    }
                } else {
-                 this.data.push({type:'link', data: word})
+                 const ext = extension.exec(word)
+                 console.log(ext)
+                 if ( ext && (ext[1] === 'gif' || ext[1] === 'jpg' || ext[1] === 'jpeg' || ext[1] === 'webp')  ) {
+                    this.data.push({type:'image', data: word})
+                 } else {
+                    this.data.push({type:'link', data: word})
+                 }
                }
            } else {
                this.data.push({type:'text', data: words[i]})

@@ -13,6 +13,43 @@ class UserService {
 
   }
 
+
+  async registration({name, password, email, ip}) {
+        const errors = []
+
+        if ( await repository.existsEmail(email) ) {
+            errors.push({
+               type: 'error',
+               subtype: 'email',
+               message: 'This email address already exists!'
+            })
+        }
+
+        if ( await repository.existsUserName(name) ) {
+          errors.push({
+             type: 'error',
+             subtype: 'username',
+             message: 'This name address already exists!'
+          })
+        }
+
+        if ( errors.length === 0 ) {
+          if ( await repository.createUser({name,password,email,ip}) ) {
+             return [{
+               type : 'success',
+               message: 'Registration is completed successfully!'
+             }]
+          } else {
+            return [{
+              type : 'error',
+              message: 'Registration has not been completed.'
+            }]
+          }
+        }
+
+        return errors
+  }
+
   async profileImage( uid, image) {
      const user = await repository.userById(uid)
      if ( user ) {

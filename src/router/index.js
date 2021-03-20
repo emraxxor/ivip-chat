@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from '@/views/Login'
 import Chat from '@/views/Chat'
+import Registration from '@/views/Registration'
 import store from '../store'
 
 
@@ -23,6 +24,14 @@ export default new Router({
       component: Chat,
       beforeEnter: (to, from, next) => {
         !store.state.authenticated ? next('/') : next()
+      }
+    },
+    {
+      path: '/registration',
+      name: 'Registration',
+      component: Registration,
+      beforeEnter: (to, from, next) => {
+        store.state.room && store.state.authenticated ? next('/chat') : next()
       }
     }
   ]

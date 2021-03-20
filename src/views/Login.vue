@@ -1,6 +1,6 @@
 <template>
 <!-- basic template from https://bootsnipp.com/ -->
-<div class="container">
+<b-container class="container">
   <div v-if="error">
      <dialog-window title="Invalid username or password" open='true' :data="{}" @validate="onDialog" @invalidate="onDialog">
         <div slot="dialogBody">
@@ -11,15 +11,15 @@
 
 	<div class="d-flex justify-content-center h-100">
 		<div class="card">
-			<div class="card-header">
+			<b-card-header>
 				<h3>Sign In</h3>
 				<div class="d-flex justify-content-end social_icon">
 					<span><i class="fab fa-facebook-square"></i></span>
 					<span><i class="fab fa-google-plus-square"></i></span>
 					<span><i class="fab fa-twitter-square"></i></span>
 				</div>
-			</div>
-			<div class="card-body">
+			</b-card-header>
+			<b-card-body>
 				<form @submit.prevent="login">
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
@@ -51,18 +51,18 @@
 						<input type="submit" value="Login" class="btn float-right login_btn">
 					</div>
 				</form>
-			</div>
-			<div class="card-footer">
+			</b-card-body>
+			<b-card-footer>
 				<div class="d-flex justify-content-center links">
-					Don't have an account?<a href="#">Sign Up</a>
+					Don't have an account?<router-link to="registration">Sign Up</router-link>
 				</div>
 				<div class="d-flex justify-content-center">
 					<a href="#">Forgot your password?</a>
 				</div>
-			</div>
+			</b-card-footer>
 		</div>
 	</div>
-</div>
+</b-container>
 </template>
 <script>
 import { ACTIONS } from "../config"
@@ -120,8 +120,8 @@ export default {
     },
 
     async login() {
-
       if(!(this.username && this.room)) return
+
       this.error = undefined
 
       try {

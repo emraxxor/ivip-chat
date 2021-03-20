@@ -18,11 +18,11 @@
     </div>
 </template>
 <script>
-import BaseTabVue from './BaseTab.vue'
+import SettingsStoreVue from './SettingsStore.vue'
 
 export default {
 
-  mixins: [BaseTabVue],
+  mixins: [SettingsStoreVue],
 
   components: {
   },

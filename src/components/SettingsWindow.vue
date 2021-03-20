@@ -6,9 +6,9 @@
             v-for="tab in tabs"
             v-bind:key="tab"
             v-bind:class="['tab-button', { active: currentTab === tab }]"
-            v-on:click="currentTab = tab"
+            v-on:click="currentTab = tab.name"
           >
-            {{ tab }}
+            {{ tab.value }}
           </button>
 
         <component :is="currentTabComponent" class="tab"></component>
@@ -27,7 +27,7 @@ export default {
   data() {
     return {
       display: false,
-      tabs: ["General", "Chat", "Profile"],
+      tabs: [ { value: 'General',  name: "general" }, { value: "Chat", name: 'chat' }, { value: "Profile", name: 'profile' }],
       currentTab: "General",
     }
   },

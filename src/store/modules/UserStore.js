@@ -62,6 +62,17 @@ export default {
       })
    },
 
+   async registration(state,data) {
+      return new Promise(async (resolve, reject) => {
+          const { body } = await Vue.http.post(`${URL}/user/registration`, data)
+          if (body.code === 400 ) {
+            reject({ message: body.message })
+          } else {
+            resolve(body.data)
+          }
+      })
+   },
+
 
     updateSettings(state, settings) {
       state.commit('setSettings', settings)

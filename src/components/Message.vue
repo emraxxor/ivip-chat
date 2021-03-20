@@ -63,7 +63,7 @@ import { CHAT_TYPE, EVENTS } from '../config';
 import { URL } from '../config/index'
 import MessageParser from './MessageParser'
 import chatMsgSfx from '../assets/chat.mp3'
-import BaseTabVue from './settings/tabs/BaseTab.vue';
+import SettingsStore from './settings/tabs/SettingsStore.vue';
 
 const chatMsgSfxAudio = new Audio(chatMsgSfx);
 
@@ -73,7 +73,7 @@ export default {
     messages : [],
   }),
 
-  mixins: [BaseTabVue],
+  mixins: [SettingsStore],
 
   sockets: {
       publicMessage : function(  {  message, username, color } ) {
@@ -81,12 +81,11 @@ export default {
           if ( this.$store.state.ignored.filter( e => e.name === username).length > 0 )
             return
 
-          if ( message.indexOf(this.user) !== -1 )
+          if ( this.settings.notifySound && message.indexOf(this.user) !== -1 )
              chatMsgSfxAudio.play()
 
-          if ( this.settings.awayEnabled )
+          if ( this.settings.awayEnabled && message.indexOf(this.user) !== -1  )
               this.sendAwayMessage()
-
 
           this.addMessage({
                   type : 'incoming',

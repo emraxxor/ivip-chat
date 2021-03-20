@@ -8,6 +8,7 @@ const authentication = require('./routes/authentication')
 const user = require('./routes/user')
 const rooms = require('./routes/room')
 const socket = require('./socket')
+const scheduler = require('./scheduler')
 
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
@@ -20,6 +21,8 @@ app.use((req, res, next) => {
     next()
 })
 
+
+
 // ROUTING
 app.use('/authentication', authentication)
 app.use('/user', user)
@@ -28,5 +31,7 @@ app.use('/rooms', rooms)
 app.use(express.static(path.join(__dirname, '../dist')))
 
 socket.createNameSpace(io)
+
+scheduler.start()
 
 module.exports = app

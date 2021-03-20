@@ -5,13 +5,14 @@
             <b-col>Away message:</b-col>
           </b-row>
           <b-row>
-            <b-col>   <b-form-input ref="textfieldAway" v-model="awayMessage" @change="updateAway($event)" placeholder="Enter your name"></b-form-input>  </b-col>
+            <b-col>   <b-form-input ref="textfieldAway" v-model="awayMessage" @change="updateAway($event)"></b-form-input>  </b-col>
           </b-row>
           <b-row>
             <b-col>Away active:</b-col>
           </b-row>
           <b-row>
-            <b-col> <b-form-checkbox ref="checkboxAway" @change="updateAway($event)" v-model="awayEnabled" :value="true" :unchecked-value="false">
+            <b-col>
+                    <b-form-checkbox ref="checkboxAway" @change="updateAway($event)" v-model="awayEnabled" :value="true" :unchecked-value="false">
                       Enable away
                     </b-form-checkbox>
             </b-col>
@@ -20,10 +21,10 @@
     </div>
 </template>
 <script>
-import BaseTabVue from './BaseTab.vue'
+import SettingsStoreVue from './SettingsStore.vue'
 export default {
 
-  mixins: [BaseTabVue],
+  mixins: [SettingsStoreVue],
 
   data() {
     return {

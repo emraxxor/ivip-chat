@@ -18,6 +18,7 @@ Redis.prototype.addUser = function (room, uid , udata) {
   console.log(`[REDIS] Add ${uid} to ${room} udata: ${JSON.stringify(udata)}`)
 
   udata.rooms = [room];
+  udata.alive = new Date( new Date().getTime() + (120*1000) )
 
   this.client
       .hsetAsync(room, uid , JSON.stringify(udata))
@@ -41,7 +42,10 @@ Redis.prototype.users = function () {
   return this.client
       .hgetallAsync('users')
       .then(users => {
-          return Object.keys(users).map(e => JSON.parse(users[e]))
+          if ( users )
+            return Object.keys(users).map(e => JSON.parse(users[e]))
+
+          return []
       }, error => {
           console.log('users ', error)
       })
@@ -83,6 +87,19 @@ Redis.prototype.getUser = async function (uid) {
       )
 }
 
+Redis.prototype.alive = async function (uid) {
+  const user = this.getUser(uid)
+  if ( user ) {
+    user.alive = new Date( new Date().getTime() + (120*1000) )
+
+    this.client
+    .hsetAsync('users', uid , JSON.stringify(user))
+    .then(
+        ()  => {},
+        err => console.log('alive', err)
+    )
+  }
+}
 
 Redis.prototype.removePrivateChat = async function (ufrom,uto) {
   let privs = await this.getPrivateChat(ufrom)

@@ -193,7 +193,7 @@ export default {
       this.lastAlive = new Date( new Date().getTime() + (120*1000) )
 
       setInterval(  () => {
-          if ( this.lastAlive < new Date() )
+          if ( new Date(this.lastAlive) < new Date() )
                 this.connectionLost = true
 
           this.$socket.emit(EVENTS.ALIVE, { user: this.userName })

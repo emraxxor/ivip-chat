@@ -4,7 +4,7 @@
       <div slot="dialogBody">
         <button
             v-for="tab in tabs"
-            v-bind:key="tab"
+            v-bind:key="tab.name"
             v-bind:class="['tab-button', { active: currentTab === tab }]"
             v-on:click="currentTab = tab.name"
           >

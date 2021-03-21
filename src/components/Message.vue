@@ -79,13 +79,13 @@ export default {
       publicMessage : function(  {  message, username, color } ) {
 
           if ( this.$store.state.ignored.filter( e => e.name === username).length > 0 )
-            return
+               return
 
           if ( this.settings.notifySound && message.indexOf(this.user) !== -1 )
-             chatMsgSfxAudio.play()
+               chatMsgSfxAudio.play()
 
           if ( this.settings.awayEnabled && message.indexOf(this.user) !== -1  )
-              this.sendAwayMessage()
+               this.sendAwayMessage()
 
           this.addMessage({
                   type : 'incoming',

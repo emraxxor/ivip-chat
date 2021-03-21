@@ -25,7 +25,7 @@
           </div>
         </div>
         <div ref="messages" class="mesgs">
-          <div class="msg_history" ref="messagePanel" @click="displaySmileyPicker ? toogleSmiley() : {} ">
+          <div class="msg_history" ref="messagePanel" @click="hidePopupComponent($event)">
              <message-vue
                 @onChange="onChangeMessagePanel"
                 @clickOnUserName="onClickUserName"
@@ -33,16 +33,24 @@
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
+
               <div v-if="displaySmileyPicker">
                 <picker :include="['people']" set='messenger'  title="Pick your emoji…" emoji="point_up"  @select="addSmiley"
                         :style="{ position: 'absolute', bottom: '20px', right: '20px' }"
                 />
               </div>
-              <input style="right: 175px" maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
+
+              <div v-if="displayGiphySearchBox">
+                <giphy-search-box :apiKey="giphyApiKey" @clicked="handleGiphySearchBoxClick"></giphy-search-box>
+              </div>
+
+              <input style="padding-right: 210px" maxlength="256" type="text" ref="inputMessage" class="write_msg" v-model="msg" v-on:keyup.enter="submit" placeholder="Type a message" />
+
               <div v-if="chatType === 'WALL'" class="color-picker">
                     <v-swatches :swatch-style="{width: '20px', height: '20px'}" popover-x="left" swatches="text-advanced" v-model="swatchColor"></v-swatches>
               </div>
 
+              <button class="msg_chat_btn" style="right:175px" @click="toggleGiphySearchBox" type="button"><i class="fa fa-images" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:140px" @click="toogleSettings" type="button"><i class="fa fa-tools" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:105px" @click="toogleChatType" type="button"><i class="fa fa-th" aria-hidden="true"></i></button>
               <button class="msg_chat_btn" style="right:70px" @click="toogleDarkTheme" type="button"><i class="fa fa-eye" aria-hidden="true"></i></button>
@@ -102,7 +110,7 @@
 <script>
 
 import '../styles/chat.scss';
-import { CHAT_TYPE, EVENTS } from "../config"
+import { CHAT_TYPE, EVENTS, API } from "../config"
 import { mapActions, mapGetters } from 'vuex'
 import { Picker } from 'emoji-mart-vue'
 import MessageVue from '@/components/Message.vue'
@@ -114,6 +122,7 @@ import ChatPanel from './ChatPanel.vue';
 import DialogWindow from '../components/DialogWindow.vue';
 import VSwatches from 'vue-swatches';
 import SettingsWindow from '../components/SettingsWindow.vue';
+import GiphySearchBox from '../components/giphy/GiphySearchBox.vue';
 
 /**
  * @author Attila Barna
@@ -129,6 +138,7 @@ export default {
       lastAlive : undefined,
       swatchColor: '#000000',
       displaySmileyPicker : false,
+      displayGiphySearchBox: false
   }),
 
   computed : {
@@ -142,6 +152,10 @@ export default {
               chatType : 'getChatType',
               chatFontColor: 'getChatFontColor'
       } ),
+
+      giphyApiKey()  {
+        return API.GIPHY.API_KEY
+      }
   },
 
   mixins: [ChatPanel],
@@ -155,7 +169,8 @@ export default {
     Picker,
     DialogWindow,
     VSwatches,
-    SettingsWindow
+    SettingsWindow,
+    GiphySearchBox
   },
 
   sockets: {
@@ -213,6 +228,10 @@ export default {
                     setDarkTheme:  'updateDark'
     }),
 
+    toggleGiphySearchBox() {
+        this.displayGiphySearchBox = !this.displayGiphySearchBox
+    },
+
     toogleDarkTheme() {
         this.setDarkTheme(!this.darktheme)
 
@@ -235,6 +254,11 @@ export default {
         }
     },
 
+    handleGiphySearchBoxClick(e) {
+      this.msg = e
+      this.submit()
+    },
+
     onChangeSearchBar(e) {
         const val = e.target.value
         this.$refs.userlist.setFilterValue(val)
@@ -254,6 +278,11 @@ export default {
 
     onClickUserItem(item) {
        this.msg = `${item.name}: `
+    },
+
+    hidePopupComponent(e) {
+        this.displayGiphySearchBox = false
+        this.displaySmileyPicker = false
     },
 
     onClickUserName(name) {
@@ -295,8 +324,8 @@ export default {
 
     submit() {
       if ( this.msg.length > 0 ) {
-        if ( this.displaySmileyPicker  )
-          this.toogleSmiley()
+        this.displaySmileyPicker = false
+        this.displayGiphySearchBox = false
 
         this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
           room: this.$store.getters.getRoom,

@@ -1,5 +1,5 @@
 <template>
-    <b-modal no-close-on-backdrop @shown="onShown" @hidden="onHidden" cancel-disabled ok-disabled size="xl" centered ref="modal" :class="classes" >
+    <b-modal no-close-on-backdrop @shown="onShown" @hidden="onHidden" cancel-disabled ok-disabled :size="size" centered ref="modal" :class="classes" >
 
                     <template #modal-header="{}">
                         <h5 class="modal-title">{{ title }}</h5>

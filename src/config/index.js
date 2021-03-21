@@ -35,6 +35,11 @@ export const EVENTS = {
   CLOSE_PRIVATE : 'closePrivateChat'
 }
 
+export const API = {
+  GIPHY : {
+     API_KEY : 'LXenc0kSNL4s0ha3DJC7OZpc1sXCkWVQ'
+  }
+}
 
 export const STATUS = {
   AVAILABLE: 'available',

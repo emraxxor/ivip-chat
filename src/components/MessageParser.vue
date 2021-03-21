@@ -4,14 +4,21 @@
         <span v-if="e.type === 'text' && e.data !== null"> {{e.data}} </span>
         <span v-else-if="e.type === 'smiley' && e.data !== null"><Emoji :size="chatType === walltype.TYPE_WALL ? 16 : 24" set="messenger" :emoji="e.data"></Emoji></span>
         <span v-else-if="e.type === 'youtube' && e.data !== null" @click="onToogleYoutubeLink" style="cursor: pointer;">
-             <dialog-window :data="data" title="Youtube" :open='open' :onClose="onCloseYoutubeLink" @validate="onToogleYoutubeLink($event)" @invalidate="onToogleYoutubeLink($event)">
+             <dialog-window :data="data" title="Youtube" :open='displayYoutube' :onClose="onCloseYoutubeLink" @validate="onToogleYoutubeLink($event)" @invalidate="onToogleYoutubeLink($event)">
                 <div slot="dialogBody" style="text-align:center">
                   <youtube :player-width="width" :player-height="height" :video-id="e.data"></youtube>
                 </div>
             </dialog-window>
             Youtube: {{e.orig}}
         </span>
-        <span v-else-if="e.type === 'image' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank"><img class="fluid resposinve" style="max-width: 100px" :src="e.data"/></a></span>
+        <span v-else-if="e.type === 'image' && e.data !== null" @click="onToogleImageLink">
+            <dialog-window :data="data" title="Picture" :open='displayImage' :onClose="onCloseImageLink" @validate="onToogleImageLink($event)" @invalidate="onToogleImageLink($event)">
+                <div slot="dialogBody" style="text-align:center">
+                  <img class="fluid resposinve" :style="{maxWidth: width + 'px'}" :src="e.data"/>
+                </div>
+            </dialog-window>
+            <img class="fluid resposinve" style="max-width: 100px" :src="e.data"/>
+        </span>
         <span v-else-if="e.type === 'link' && e.data !== null"><a style="text-decoration:none;" :href="e.data" target="_blank">{{e.data}}</a></span>
      </span>
 
@@ -28,7 +35,8 @@ export default {
 
   data : () => ({
      data : [],
-     open: false
+     displayYoutube: false,
+     displayImage: false
   }),
 
    computed : {
@@ -76,11 +84,19 @@ export default {
   methods : {
 
       onCloseYoutubeLink() {
-        this.open = false
+        this.displayYoutube = false
       },
 
       onToogleYoutubeLink() {
-        this.open = !this.open
+        this.displayYoutube = !this.displayYoutube
+      },
+
+      onCloseImageLink() {
+        this.displayImage = false
+      },
+
+      onToogleImageLink() {
+        this.displayImage = !this.displayImage
       },
 
 
@@ -120,8 +136,7 @@ export default {
                    }
                } else {
                  const ext = extension.exec(word)
-                 console.log(ext)
-                 if ( ext && (ext[1] === 'gif' || ext[1] === 'jpg' || ext[1] === 'jpeg' || ext[1] === 'webp')  ) {
+                 if ( ext && (ext[1] === 'gif' || ext[1] === 'jpg' || ext[1] === 'jpeg' || ext[1] === 'webp' || ext[1] === 'png')  ) {
                     this.data.push({type:'image', data: word})
                  } else {
                     this.data.push({type:'link', data: word})

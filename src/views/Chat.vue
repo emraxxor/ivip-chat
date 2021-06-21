@@ -109,58 +109,58 @@
 </template>
 <script>
 
-import '../styles/chat.scss';
-import { CHAT_TYPE, EVENTS, API } from "../config"
+import '../styles/chat.scss'
+import { CHAT_TYPE, EVENTS, API } from '../config'
 import { mapActions, mapGetters } from 'vuex'
 import { Picker } from 'emoji-mart-vue'
 import MessageVue from '@/components/Message.vue'
 import UserList from '@/components/UserList.vue'
 import Dialog from '@/components/DialogWindow.vue'
 import PrivateChat from '@/components/PrivateChat.vue'
-import PrivateList from '../components/PrivateList.vue';
-import ChatPanel from './ChatPanel.vue';
-import DialogWindow from '../components/DialogWindow.vue';
-import VSwatches from 'vue-swatches';
-import SettingsWindow from '../components/SettingsWindow.vue';
-import GiphySearchBox from '../components/giphy/GiphySearchBox.vue';
+import PrivateList from '../components/PrivateList.vue'
+import ChatPanel from './ChatPanel.vue'
+import DialogWindow from '../components/DialogWindow.vue'
+import VSwatches from 'vue-swatches'
+import SettingsWindow from '../components/SettingsWindow.vue'
+import GiphySearchBox from '../components/giphy/GiphySearchBox.vue'
 
 /**
  * @author Attila Barna
  */
 export default {
 
-  data : () => ({
-      msg : '',
-      notices : [],
-      accepted : [],
-      webcams : [],
-      connectionLost : false,
-      lastAlive : undefined,
-      swatchColor: '#000000',
-      displaySmileyPicker : false,
-      displayGiphySearchBox: false
+  data: () => ({
+    msg: '',
+    notices: [],
+    accepted: [],
+    webcams: [],
+    connectionLost: false,
+    lastAlive: undefined,
+    swatchColor: '#000000',
+    displaySmileyPicker: false,
+    displayGiphySearchBox: false
   }),
 
-  computed : {
-      ...mapGetters( {
-              public  : 'getPublic',
-              room : 'getRoom',
-              userName : 'getUserName',
-              userStatus : 'getUserStatus',
-              isAuthenticated : 'getAuthenticated',
-              darktheme : 'getDarktheme',
-              chatType : 'getChatType',
-              chatFontColor: 'getChatFontColor'
-      } ),
+  computed: {
+    ...mapGetters({
+      public: 'getPublic',
+      room: 'getRoom',
+      userName: 'getUserName',
+      userStatus: 'getUserStatus',
+      isAuthenticated: 'getAuthenticated',
+      darktheme: 'getDarktheme',
+      chatType: 'getChatType',
+      chatFontColor: 'getChatFontColor'
+    }),
 
-      giphyApiKey()  {
-        return API.GIPHY.API_KEY
-      }
+    giphyApiKey () {
+      return API.GIPHY.API_KEY
+    }
   },
 
   mixins: [ChatPanel],
 
-  components : {
+  components: {
     MessageVue,
     Dialog,
     UserList,
@@ -175,171 +175,166 @@ export default {
 
   sockets: {
 
-      notice : function( data ) {
-          const exists = this.notices.filter(e => e.username === data.username && e.type == data.type ).length > 0
-          if ( !exists ) {
-            this.notices.push({...data})
-          }
-      },
-
-      kickUser : function(data) {
-          alert('You are kicked out of chat!')
-          this.$socket.close()
-          this.$store.commit('setAuthenticate', false)
-          this.$router.push('/');
-      },
-
-      alive: function({user}) {
-         this.lastAlive = new Date( new Date().getTime() + (120*1000) )
+    notice: function (data) {
+      const exists = this.notices.filter(e => e.username === data.username && e.type === data.type).length > 0
+      if (!exists) {
+        this.notices.push({...data})
       }
+    },
+
+    kickUser: function (data) {
+      alert('You are kicked out of chat!')
+      this.$socket.close()
+      this.$store.commit('setAuthenticate', false)
+      this.$router.push('/')
+    },
+
+    alive: function ({user}) {
+      this.lastAlive = new Date(new Date().getTime() + (120 * 1000))
+    }
   },
 
-  beforeCreate: function() {
-      this.$socket.emit(EVENTS.JOIN_ROOM, this.$store.state)
+  beforeCreate: function () {
+    this.$socket.emit(EVENTS.JOIN_ROOM, this.$store.state)
   },
 
-  watch : {
-     swatchColor() {
-       this.$store.commit('setChatFontColor', this.swatchColor)
-     }
+  watch: {
+    swatchColor () {
+      this.$store.commit('setChatFontColor', this.swatchColor)
+    }
   },
 
-  created() {
-      this.lastAlive = new Date( new Date().getTime() + (120*1000) )
+  created () {
+    this.lastAlive = new Date(new Date().getTime() + (120 * 1000))
 
-      setInterval(  () => {
-          if ( new Date(this.lastAlive) < new Date() )
-                this.connectionLost = true
+    setInterval(() => {
+      if (new Date(this.lastAlive) < new Date()) { this.connectionLost = true }
 
-          this.$socket.emit(EVENTS.ALIVE, { user: this.userName })
-
-      } , 30 * 1000)
+      this.$socket.emit(EVENTS.ALIVE, { user: this.userName })
+    }, 30 * 1000)
   },
 
-  mounted() {
-
-
+  mounted () {
 
   },
 
-  methods :  {
+  methods: {
     ...mapActions({
-                    submitMessage: 'addMessage',
-                    setDarkTheme:  'updateDark'
+      submitMessage: 'addMessage',
+      setDarkTheme: 'updateDark'
     }),
 
-    toggleGiphySearchBox() {
-        this.displayGiphySearchBox = !this.displayGiphySearchBox
+    toggleGiphySearchBox () {
+      this.displayGiphySearchBox = !this.displayGiphySearchBox
     },
 
-    toogleDarkTheme() {
-        this.setDarkTheme(!this.darktheme)
+    toogleDarkTheme () {
+      this.setDarkTheme(!this.darktheme)
 
-        if ( this.darktheme ) {
-           document.body.classList.add('dark')
-        } else {
-           document.body.classList.remove('dark')
-        }
+      if (this.darktheme) {
+        document.body.classList.add('dark')
+      } else {
+        document.body.classList.remove('dark')
+      }
     },
 
-    toogleSettings() {
+    toogleSettings () {
       this.$refs.settings.toggle()
     },
 
-    toogleChatType() {
-        if ( this.chatType === CHAT_TYPE.TYPE_MESSENGER ) {
-           this.$store.commit('setChatType',  CHAT_TYPE.TYPE_WALL )
-        } else {
-           this.$store.commit('setChatType',  CHAT_TYPE.TYPE_MESSENGER )
-        }
+    toogleChatType () {
+      if (this.chatType === CHAT_TYPE.TYPE_MESSENGER) {
+        this.$store.commit('setChatType', CHAT_TYPE.TYPE_WALL)
+      } else {
+        this.$store.commit('setChatType', CHAT_TYPE.TYPE_MESSENGER)
+      }
     },
 
-    handleGiphySearchBoxClick(e) {
+    handleGiphySearchBoxClick (e) {
       this.msg = e
       this.submit()
     },
 
-    onChangeSearchBar(e) {
-        const val = e.target.value
-        this.$refs.userlist.setFilterValue(val)
+    onChangeSearchBar (e) {
+      const val = e.target.value
+      this.$refs.userlist.setFilterValue(val)
     },
 
-    addSmiley(smile) {
+    addSmiley (smile) {
       this.msg = `${this.msg} ${smile.colons}`
     },
 
-    toogleSmiley() {
-        this.displaySmileyPicker = !this.displaySmileyPicker;
+    toogleSmiley () {
+      this.displaySmileyPicker = !this.displaySmileyPicker
     },
 
-    privateWindowOnClose(item) {
-        this.accepted = this.accepted.filter(e => e.username !== item.username)
+    privateWindowOnClose (item) {
+      this.accepted = this.accepted.filter(e => e.username !== item.username)
     },
 
-    onClickUserItem(item) {
-       this.msg = `${item.name}: `
+    onClickUserItem (item) {
+      this.msg = `${item.name}: `
     },
 
-    hidePopupComponent(e) {
-        this.displayGiphySearchBox = false
-        this.displaySmileyPicker = false
+    hidePopupComponent (e) {
+      this.displayGiphySearchBox = false
+      this.displaySmileyPicker = false
     },
 
-    onClickUserName(name) {
-        this.msg = `${name}: `
-        this.$refs.inputMessage.focus()
+    onClickUserName (name) {
+      this.msg = `${name}: `
+      this.$refs.inputMessage.focus()
     },
 
-    onChangeMessagePanel(newv,oldv) {
+    onChangeMessagePanel (newv, oldv) {
       setTimeout(() => {
         this.$refs.messagePanel.scrollTop = this.$refs.messagePanel.scrollHeight
-      },100)
+      }, 100)
     },
 
-    onNoticeAccept : function(item) {
-      if ( item.type == 'ask_private' ) {
-         this.$socket.emit(EVENTS.ACCEPT_PRIVATE ,  { to : item.username , from : item.to , type : 'accept_private' }  )
-         this.accepted.push({...item, callee : true})
-      } else if ( item.type == 'ask_camera' ) {
-         console.log(`Usercamera offer to ${item.username}`)
-         this.$refs.usercamera.offer(item.username)
-         this.$socket.emit(EVENTS.ACCEPT_CAMERA ,   { to : item.username , from : item.to , type : 'accept_camera' }  )
-      } else if ( item.type == 'accept_private' ) {
-         this.accepted.push({...item, minimized: false, callee: false})
-      }  else if ( item.type == 'accept_camera' ) {
-         this.notices.push(item)
+    onNoticeAccept: function (item) {
+      if (item.type === 'ask_private') {
+        this.$socket.emit(EVENTS.ACCEPT_PRIVATE, { to: item.username, from: item.to, type: 'accept_private' })
+        this.accepted.push({...item, callee: true})
+      } else if (item.type === 'ask_camera') {
+        this.$refs.usercamera.offer(item.username)
+        this.$socket.emit(EVENTS.ACCEPT_CAMERA, { to: item.username, from: item.to, type: 'accept_camera' })
+      } else if (item.type === 'accept_private') {
+        this.accepted.push({...item, minimized: false, callee: false})
+      } else if (item.type === 'accept_camera') {
+        this.notices.push(item)
       }
 
       this.notices = this.notices.filter(e => e.username !== item.username)
     },
 
-    onNoticeDecline : function(item) {
-      if ( item.type == 'ask_private' ) {
-         this.$socket.emit(EVENTS.DECLINE_PRIVATE, { to : item.username , from : item.to, type : 'decline_private' }  )
-      } else if ( item.type == 'ask_camera' ) {
-         this.$socket.emit(EVENTS.DECLINE_CAMERA,  { to : item.username , from : item.to, type : 'decline_camera' }  )
+    onNoticeDecline: function (item) {
+      if (item.type === 'ask_private') {
+        this.$socket.emit(EVENTS.DECLINE_PRIVATE, { to: item.username, from: item.to, type: 'decline_private' })
+      } else if (item.type === 'ask_camera') {
+        this.$socket.emit(EVENTS.DECLINE_CAMERA, { to: item.username, from: item.to, type: 'decline_camera' })
       }
       this.notices = this.notices.filter(e => e.username !== item.username)
     },
 
-    submit() {
-      if ( this.msg.length > 0 ) {
+    submit () {
+      if (this.msg.length > 0) {
         this.displaySmileyPicker = false
         this.displayGiphySearchBox = false
 
-        this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
+        this.$socket.emit(EVENTS.SUBMIT_MESSAGE, {
           room: this.$store.getters.getRoom,
-          username : this.$store.getters.getUserName,
+          username: this.$store.getters.getUserName,
           message: this.msg,
           color: this.chatFontColor
         })
 
         this.submitMessage({
-                  type : 'sent',
-                  message : this.msg,
-                  username: this.$store.getters.getUserName,
-                  time: new Date(),
-                  color: this.chatFontColor
+          type: 'sent',
+          message: this.msg,
+          username: this.$store.getters.getUserName,
+          time: new Date(),
+          color: this.chatFontColor
         })
         this.msg = ''
       }

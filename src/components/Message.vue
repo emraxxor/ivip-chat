@@ -53,128 +53,118 @@
               </div>
          </div>
     </div>
-
-  </div>
-
 </template>
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { CHAT_TYPE, EVENTS } from '../config';
-import { URL } from '../config/index'
+import { CHAT_TYPE, EVENTS, URL } from '../config'
+
 import MessageParser from './MessageParser'
 import chatMsgSfx from '../assets/chat.mp3'
-import SettingsStore from './settings/tabs/SettingsStore.vue';
+import SettingsStore from './settings/tabs/SettingsStore.vue'
 
-const chatMsgSfxAudio = new Audio(chatMsgSfx);
+const chatMsgSfxAudio = new Audio(chatMsgSfx)
 
 export default {
 
-  data : () => ({
-    messages : [],
+  data: () => ({
+    messages: []
   }),
 
   mixins: [SettingsStore],
 
   sockets: {
-      publicMessage : function(  {  message, username, color } ) {
+    publicMessage: function ({ message, username, color }) {
+      if (this.$store.state.ignored.filter(e => e.name === username).length > 0) { return }
 
-          if ( this.$store.state.ignored.filter( e => e.name === username).length > 0 )
-               return
+      if (this.settings.notifySound && message.indexOf(this.user) !== -1) { chatMsgSfxAudio.play() }
 
-          if ( this.settings.notifySound && message.indexOf(this.user) !== -1 )
-               chatMsgSfxAudio.play()
+      if (this.settings.awayEnabled && message.indexOf(this.user) !== -1) { this.sendAwayMessage() }
 
-          if ( this.settings.awayEnabled && message.indexOf(this.user) !== -1  )
-               this.sendAwayMessage()
-
-          this.addMessage({
-                  type : 'incoming',
-                  username: username,
-                  message : message,
-                  time: new Date(),
-                  color: color
-          })
-      }
-  },
-
-  components : {
-       MessageParser
-  },
-
-  computed : {
-        ...mapGetters( {
-              public : 'getPublic',
-              user : 'getUserName',
-              roomId : 'getRoom',
-              chatType : 'getChatType',
-              settings: 'user/getSettings'
-        }),
-
-        msg() {
-          return this.$store.state.msg;
-        },
-
-        url() {
-          return URL
-        },
-
-        walltype() {
-          return CHAT_TYPE
-        }
-
-  },
-
-  watch : {
-
-    msg(newv,oldv) {
-       this.messages = this.$store.state.public[ this.$store.state.room ].messages
-       this.$emit('onChange', newv ,oldv )
-
-       if ( this.messages.length > 60 )
-           this.$delete(this.messages, 0)
-
-    },
-
-
-    chatType() {
-    },
-
-    messages() {
+      this.addMessage({
+        type: 'incoming',
+        username: username,
+        message: message,
+        time: new Date(),
+        color: color
+      })
     }
   },
 
-  methods : {
-        ...mapActions({ addMessage : 'addMessage' }),
+  components: {
+    MessageParser
+  },
 
-        clickOnUserName(username) {
-           this.$emit('clickOnUserName', username )
-        },
+  computed: {
+    ...mapGetters({
+      public: 'getPublic',
+      user: 'getUserName',
+      roomId: 'getRoom',
+      chatType: 'getChatType',
+      settings: 'user/getSettings'
+    }),
 
-        sendAwayMessage() {
-          this.$socket.emit(EVENTS.SUBMIT_MESSAGE , {
-                room: this.$store.getters.getRoom,
-                username : this.$store.getters.getUserName,
-                message: this.settings.awayMessage,
-                color: this.$store.getters.getChatFontColor
-          })
+    msg () {
+      return this.$store.state.msg
+    },
 
-          this.$store.dispatch('addMessage',{
-                type : 'sent',
-                message : this.settings.awayMessage,
-                username: this.$store.getters.getUserName,
-                time: new Date(),
-                color: this.$store.getters.getChatFontColor
-          })
-        }
+    url () {
+      return URL
+    },
+
+    walltype () {
+      return CHAT_TYPE
+    }
+
+  },
+
+  watch: {
+
+    msg (newv, oldv) {
+      this.messages = this.$store.state.public[ this.$store.state.room ].messages
+      this.$emit('onChange', newv, oldv)
+
+      if (this.messages.length > 60) { this.$delete(this.messages, 0) }
+    },
+
+    chatType () {
+    },
+
+    messages () {
+    }
+  },
+
+  methods: {
+    ...mapActions({ addMessage: 'addMessage' }),
+
+    clickOnUserName (username) {
+      this.$emit('clickOnUserName', username)
+    },
+
+    sendAwayMessage () {
+      this.$socket.emit(EVENTS.SUBMIT_MESSAGE, {
+        room: this.$store.getters.getRoom,
+        username: this.$store.getters.getUserName,
+        message: this.settings.awayMessage,
+        color: this.$store.getters.getChatFontColor
+      })
+
+      this.$store.dispatch('addMessage', {
+        type: 'sent',
+        message: this.settings.awayMessage,
+        username: this.$store.getters.getUserName,
+        time: new Date(),
+        color: this.$store.getters.getChatFontColor
+      })
+    }
   },
 
   props: {
 
   },
 
-  mounted() {
+  mounted () {
   }
-};
+}
 </script>
 <style scoped>
   .msg_user_name {

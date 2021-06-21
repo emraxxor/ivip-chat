@@ -26,10 +26,10 @@ export default {
 
   mixins: [SettingsStoreVue],
 
-  data() {
+  data () {
     return {
-       awayMessage : '',
-       awayEnabled: false,
+      awayMessage: '',
+      awayEnabled: false
     }
   },
 
@@ -37,18 +37,18 @@ export default {
   },
 
   mounted () {
-      this.awayMessage = this.settings.awayMessage
-      this.awayEnabled = this.settings.awayEnabled
+    this.awayMessage = this.settings.awayMessage
+    this.awayEnabled = this.settings.awayEnabled
   },
 
   methods: {
-      updateAway() {
-           this.updateSettings({
-              awayMessage: this.awayMessage,
-              awayEnabled: !this.awayEnabled
-           })
-      }
-  },
+    updateAway () {
+      this.updateSettings({
+        awayMessage: this.awayMessage,
+        awayEnabled: !this.awayEnabled
+      })
+    }
+  }
 
 }
 </script>

@@ -10,18 +10,15 @@ const rooms = require('./routes/room')
 const socket = require('./socket')
 const scheduler = require('./scheduler')
 
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(bodyParser.json({limit: '50mb'}))
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 app.use(cors())
-
 
 // MIDDLEWARE
 app.use((req, res, next) => {
-    console.log('Time: ', Date.now())
-    next()
+  console.log('Time: ', Date.now())
+  next()
 })
-
-
 
 // ROUTING
 app.use('/authentication', authentication)

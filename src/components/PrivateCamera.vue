@@ -23,14 +23,14 @@ export default {
     to: String,
     room: String,
     videoAnswer: Object,
-    callee : {
+    callee: {
       default: false
     }
   },
-  mixins:[ VideoConfiguration ],
+  mixins: [ VideoConfiguration ],
 
   data: () => ({
-     constraints: {
+    constraints: {
       video: {
         width: 150,
         height: 120
@@ -40,153 +40,126 @@ export default {
     // Peer connection
     pc: undefined,
     remoteStream: undefined,
-    remoteVideo: {},
+    remoteVideo: {}
   }),
 
-  created() {
-  },
-
-  async created() {
+  async created () {
     await this.startLocalMedia()
     await this.initAudioVideo()
 
     this.createPeerConnection()
     this.addLocalStream(this.pc)
 
-
     this.events()
     this.onAddStream()
 
-
-    if ( !this.videoAnswer.video )
-      // CALLER
+    if (!this.videoAnswer.video) {
       this.invite(this.pc, this.to, this.room)
-    else
-      // CALLEE
+    } else {
       this.handleVideoOfferMsg(this.videoAnswer.remoteDesc, this.pc, this.videoAnswer.from, this.room)
+    }
   },
 
-  async mounted() {
+  async mounted () {
     this.myVideo = this.$refs.LocalVideo
     this.remoteVideo = this.$refs.RemoteVideo
   },
 
-  beforeDestroy() {
+  beforeDestroy () {
     this.closeVideoCall()
   },
 
   methods: {
 
-    createPeerConnection() {
-      if ( !this.pc )
-       this.pc = new RTCPeerConnection(ICESERVERS)
+    createPeerConnection () {
+      if (!this.pc) { this.pc = new RTCPeerConnection(ICESERVERS) }
     },
 
-    async handleNewIceCandidateMsg(candidate) {
+    async handleNewIceCandidateMsg (candidate) {
       try {
-
-        if ( !this.pc )
-          throw new Error("IllegalStateException")
-
-        console.log(`[DEV] ${this.username} added a candidate : `);
-        console.log(candidate)
-        await this.pc.addIceCandidate(candidate);
-        console.log(`[DEV] Candidate added successfully`);
+        if (!this.pc) { throw new Error('IllegalStateException') }
+        await this.pc.addIceCandidate(candidate)
       } catch (error) {
-        console.log(`[DEV] Error adding a candidate in ${this.username}. Error: ${error}`)
+        console.error(`[DEV] Error adding a candidate in ${this.username}. Error: ${error}`)
       }
     },
 
-
-    events() {
-
+    events () {
       // handleICECandidateEvent()
       this.pc.onicecandidate = ({ candidate }) => {
         if (!candidate) return
-                console.log(`[DEV] ${this.username} try to send candidate`)
-                setTimeout(() => {
-                    console.log(`[DEV] Sending ICE candidate to ${this.to} , room: ${this.room} , from: ${this.from} `)
-                    console.log(candidate)
-                    this.$socket.emit(EVENTS.PC_SIGNALING, {
-                        candidate,
-                        target: this.to,
-                        type : 'new-ice-candidate',
-                        from: this.username,
-                        room: this.room,
-                    })
-                }, 4500)
+        setTimeout(() => {
+          this.$socket.emit(EVENTS.PC_SIGNALING, {
+            candidate,
+            target: this.to,
+            type: 'new-ice-candidate',
+            from: this.username,
+            room: this.room
+          })
+        }, 4500)
       }
 
-     this.pc.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent;
-     this.pc.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent;
-     this.pc.onsignalingstatechange = this.handleSignalingStateChangeEvent;
+      this.pc.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent
+      this.pc.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent
+      this.pc.onsignalingstatechange = this.handleSignalingStateChangeEvent
     },
 
+    closeVideoCall () {
+      if (this.pc) {
+        this.$emit('closeCall')
+        this.pc.close()
+        this.pc = null
+      }
 
-    closeVideoCall() {
-       if ( this.pc ) {
-         this.$emit('closeCall');
-         this.pc.close()
-         this.pc = null
-       }
-
-       this.$socket.emit(EVENTS.PC_SIGNALING, {
-          target: this.to,
-          type : 'close-video-call',
-          from: this.$store.state.username,
-          room: this.room
-        })
+      this.$socket.emit(EVENTS.PC_SIGNALING, {
+        target: this.to,
+        type: 'close-video-call',
+        from: this.$store.state.username,
+        room: this.room
+      })
     },
 
-
-    handleICEGatheringStateChangeEvent(event) {
+    handleICEGatheringStateChangeEvent (event) {
     },
 
-     handleSignalingStateChangeEvent(event) {
-      switch(this.pc.signalingState) {
-        case "closed":
-          this.closeVideoCall();
-          break;
+    handleSignalingStateChangeEvent (event) {
+      switch (this.pc.signalingState) {
+        case 'closed':
+          this.closeVideoCall()
+          break
       }
     },
 
-
-    handleICEConnectionStateChangeEvent(event) {
-      switch(this.pc.iceConnectionState) {
-        case "closed":
-        case "failed":
-          this.closeVideoCall();
-          break;
+    handleICEConnectionStateChangeEvent (event) {
+      switch (this.pc.iceConnectionState) {
+        case 'closed':
+        case 'failed':
+          this.closeVideoCall()
+          break
       }
     },
 
-
-    onAddStream() {
+    onAddStream () {
       this.pc.onaddstream = event => {
         if (!this.remoteVideo.srcObject && event.stream) {
           this.remoteStream = event.stream
           this.remoteVideo.srcObject = this.remoteStream
         }
       }
-    },
+    }
 
   },
 
   watch: {
-    videoAnswer: async function(newv, oldv) {
+    videoAnswer: async function (newv, oldv) {
       const desc = newv.remoteDesc
       const candidate = newv.candidate
 
       if (!!desc && desc !== oldv.remoteDesc) {
-        console.log('Set remote description')
-        console.log(desc)
         await this.setRemoteDescription(desc, this.pc)
       }
 
-      if (!!candidate && candidate !== oldv.candidate)
-        await this.handleNewIceCandidateMsg(candidate)
-
-
+      if (!!candidate && candidate !== oldv.candidate) { await this.handleNewIceCandidateMsg(candidate) }
     }
   }
 
@@ -223,4 +196,3 @@ export default {
   }
 }
 </style>
-

@@ -21,29 +21,29 @@ export default {
 
   mixins: [SettingsStoreVue],
 
-  data() {
+  data () {
     return {
-       notify: false
+      notify: false
     }
   },
 
   mounted () {
-       this.notify = this.settings.notifySound
+    this.notify = this.settings.notifySound
   },
 
   methods: {
 
-     changeNotify(e) {
-        this.updateSettings({
-              notifySound: !this.notify
-        })
-     },
+    changeNotify (e) {
+      this.updateSettings({
+        notifySound: !this.notify
+      })
+    },
 
-     changeFontSize(e) {
-        this.updateSettings({ fontSize: e })
-     }
+    changeFontSize (e) {
+      this.updateSettings({ fontSize: e })
+    }
 
-  },
+  }
 
 }
 </script>

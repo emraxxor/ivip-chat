@@ -1,19 +1,19 @@
 export const URL = `${process.env.VUE_APP_SOCKET_HOST || 'http://localhost'}:${process.env.VUE_APP_SOCKET_PORT || '3000'}`
 
 export const ACTIONS = {
-    AUTHENTICATE : 'user/authenticate',
-    JOIN_ROOM : 'joinRoom',
-    ROOMS_LIST  : 'user/rooms',
-    UPDATE_ROOM : 'updateRoom'
+  AUTHENTICATE: 'user/authenticate',
+  JOIN_ROOM: 'joinRoom',
+  ROOMS_LIST: 'user/rooms',
+  UPDATE_ROOM: 'updateRoom'
 }
 
 export const STORE = {
-  GLOBAL : {
+  GLOBAL: {
     root: true
   },
-  HEADER : {
+  HEADER: {
     AUTH: {
-      headers: {  Authorization: 'Bearer undefined' }
+      headers: { Authorization: 'Bearer undefined' }
     }
   }
 }
@@ -21,41 +21,40 @@ export const STORE = {
 export const EVENTS = {
   JOIN_ROOM: 'joinRoom',
   ALIVE: 'alive',
-  ACCEPT_PRIVATE : 'acceptPrivate',
-  ACCEPT_CAMERA : 'acceptCamera',
-  DECLINE_PRIVATE : 'declinePrivate',
-  DECLINE_CAMERA : 'declineCamera',
-  SUBMIT_MESSAGE : 'publicMessage',
-  ASK_PRIVATE : 'askPrivate',
-  ASK_CAMERA : 'askCamera',
+  ACCEPT_PRIVATE: 'acceptPrivate',
+  ACCEPT_CAMERA: 'acceptCamera',
+  DECLINE_PRIVATE: 'declinePrivate',
+  DECLINE_CAMERA: 'declineCamera',
+  SUBMIT_MESSAGE: 'publicMessage',
+  ASK_PRIVATE: 'askPrivate',
+  ASK_CAMERA: 'askCamera',
   KICK_USER: 'kickUser',
   DISCONNECT: 'disconnect',
-  SEND_PRIVATE_MESSAGE : 'privateMessage',
-  PC_SIGNALING : 'PCSignaling',
-  CLOSE_PRIVATE : 'closePrivateChat'
+  SEND_PRIVATE_MESSAGE: 'privateMessage',
+  PC_SIGNALING: 'PCSignaling',
+  CLOSE_PRIVATE: 'closePrivateChat'
 }
 
 export const API = {
-  GIPHY : {
-     API_KEY : 'LXenc0kSNL4s0ha3DJC7OZpc1sXCkWVQ'
+  GIPHY: {
+    API_KEY: 'LXenc0kSNL4s0ha3DJC7OZpc1sXCkWVQ'
   }
 }
 
 export const STATUS = {
   AVAILABLE: 'available',
   AWAY: 'away',
-  BUSY : 'busy'
+  BUSY: 'busy'
 }
 
 export const PCSIGNAL = {
-  OFFER : 'offer',
-  ANSWER : 'answer'
+  OFFER: 'offer',
+  ANSWER: 'answer'
 }
 
-
 export const CHAT_TYPE = {
-   TYPE_MESSENGER : 'MESSENGER',
-   TYPE_WALL : 'WALL'
+  TYPE_MESSENGER: 'MESSENGER',
+  TYPE_WALL: 'WALL'
 }
 
 export const log = (arg) => {
@@ -64,15 +63,15 @@ export const log = (arg) => {
 }
 
 export const ICESERVERS = {
-  iceServers : [
-     {
+  iceServers: [
+    {
       urls: 'turn:server.com:3478',
       username: 'user',
       credential: 'password'
-     },
-     {
-      urls: 'stun:stun.l.google.com:19302',
-     },
+    },
+    {
+      urls: 'stun:stun.l.google.com:19302'
+    }
   ],
-  iceTransportPolicy: "relay"
+  iceTransportPolicy: 'relay'
 }

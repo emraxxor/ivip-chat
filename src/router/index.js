@@ -5,7 +5,6 @@ import Chat from '@/views/Chat'
 import Registration from '@/views/Registration'
 import store from '../store'
 
-
 Vue.use(Router)
 
 export default new Router({

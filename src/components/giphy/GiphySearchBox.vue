@@ -17,82 +17,81 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios'
 
 export default {
   props: {
     apiKey: {
-      type: String,
+      type: String
     },
 
     searchBar: {
       type: Boolean,
-      default: true,
+      default: true
     },
 
     imgStyle: {
-      default: () =>  ({  paddingTop: '10px', margin: '0 10px', cursor: 'pointer' })
+      default: () => ({ paddingTop: '10px', margin: '0 10px', cursor: 'pointer' })
     },
 
     placeholder: {
       type: String,
-      default: "Gif search...",
+      default: 'Gif search...'
     },
 
     searchButtonText: {
       type: String,
-      default: "Go!",
+      default: 'Go!'
     },
 
     resultNumbers: {
       type: Number,
-      default: 35,
+      default: 35
     },
 
     clearSearchBar: {
       type: Boolean,
-      default: true,
+      default: true
     },
 
     clearResultOnClick: {
       type: Boolean,
-      default: true,
-    },
+      default: true
+    }
   },
-  data() {
+  data () {
     return {
-      searchText: "",
-      result: [],
-    };
+      searchText: '',
+      result: []
+    }
   },
-
 
   methods: {
-    async search() {
-      this.result = [];
+    async search () {
+      this.result = []
       await axios
         .get(
-          "https://api.giphy.com/v1/gifs/search?api_key=" +
+          'https://api.giphy.com/v1/gifs/search?api_key=' +
             this.apiKey +
-            "&q=" +
+            '&q=' +
             this.searchText
         )
         .then((response) => {
-          this.searchText = "";
-          let count = 0;
+          this.searchText = ''
+          let count = 0
           for (let el of response.data.data) {
-            this.result.push(el.images.original.url);
-            if ((count += 1) >= this.resultNumbers) break;
+            this.result.push(el.images.original.url)
+            if ((count += 1) >= this.resultNumbers) break
           }
-        });
-      if (this.clearSearchBar) this.searchText = "";
+        })
+      if (this.clearSearchBar) this.searchText = ''
     },
-    onClickImage(image) {
-      this.$emit("clicked", image.srcElement.currentSrc);
-      if (this.clearResultOnClick) this.result = [];
-    },
-  },
-};
+    onClickImage (image) {
+      this.$emit('clicked', image.srcElement.currentSrc)
+      if (this.clearResultOnClick) this.result = []
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -124,7 +123,6 @@ img {
   max-width: 50px;
   float: left;
 }
-
 
 .search-gif-input {
   width: 25rem;

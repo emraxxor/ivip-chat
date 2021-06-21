@@ -27,128 +27,120 @@
 <script>
 import { Emoji, NimbleEmojiIndex } from 'emoji-mart-vue'
 import data from 'emoji-mart-vue/data/messenger'
-import { mapGetters } from 'vuex';
-import { CHAT_TYPE } from '../config';
-import DialogWindow from './DialogWindow.vue';
+import { mapGetters } from 'vuex'
+import { CHAT_TYPE } from '../config'
+import DialogWindow from './DialogWindow.vue'
 
 export default {
 
-  data : () => ({
-     data : [],
-     displayYoutube: false,
-     displayImage: false
+  data: () => ({
+    data: [],
+    displayYoutube: false,
+    displayImage: false
   }),
 
-   computed : {
-        ...mapGetters( {
-              chatType : 'getChatType',
-              settings: 'user/getSettings'
-        }),
+  computed: {
+    ...mapGetters({
+      chatType: 'getChatType',
+      settings: 'user/getSettings'
+    }),
 
-       width() {
-          if ( window.innerWidth < 480 )
-            return 320;
+    width () {
+      if (window.innerWidth < 480) { return 320 }
 
-          return 480;
-       },
+      return 480
+    },
 
-       height() {
-          if ( window.innerHeight < 320 )
-            return 280;
+    height () {
+      if (window.innerHeight < 320) { return 280 }
 
-          return 320;
-       },
+      return 320
+    },
 
-
-       walltype() {
-          return CHAT_TYPE
-       }
+    walltype () {
+      return CHAT_TYPE
+    }
   },
 
   props: {
-      msg : {
-        required: true
-      }
+    msg: {
+      required: true
+    }
   },
 
-  mounted() {
-     this.parseMessage()
+  mounted () {
+    this.parseMessage()
   },
 
-
-  components : {
+  components: {
     Emoji,
     DialogWindow
   },
 
-  methods : {
+  methods: {
 
-      onCloseYoutubeLink() {
-        this.displayYoutube = false
-      },
+    onCloseYoutubeLink () {
+      this.displayYoutube = false
+    },
 
-      onToogleYoutubeLink() {
-        this.displayYoutube = !this.displayYoutube
-      },
+    onToogleYoutubeLink () {
+      this.displayYoutube = !this.displayYoutube
+    },
 
-      onCloseImageLink() {
-        this.displayImage = false
-      },
+    onCloseImageLink () {
+      this.displayImage = false
+    },
 
-      onToogleImageLink() {
-        this.displayImage = !this.displayImage
-      },
+    onToogleImageLink () {
+      this.displayImage = !this.displayImage
+    },
 
+    parseMessage () {
+      const words = this.msg.split(' ')
+      const emojiIndex = new NimbleEmojiIndex(data)
+      const extension = /(?:\.([^.]+))?$/
+      let res = this.msg.match(new RegExp(/:[^:\s]*(?:::[^:\s]*)*:/g))
+      let urls = this.msg.match(new RegExp(
+        '(^|[ \t\r\n])((http|https):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))'
+        , 'g'
+      ))
 
-      parseMessage() {
-        const words = this.msg.split(" ")
-        const emojiIndex = new NimbleEmojiIndex(data)
-        const extension = /(?:\.([^.]+))?$/
-        let res = this.msg.match(new RegExp(/:[^:\s]*(?:::[^:\s]*)*:/g))
-        let urls = this.msg.match(new RegExp(
-          "(^|[ \t\r\n])((http|https):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))"
-         ,"g"
-        ));
-
-        const yt = (url) => {
-              const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-              const match = url.match(regExp);
-              return (match&&match[7].length==11)? match[7] : false;
-        }
-
-        if ( res === null )
-          res = []
-
-        if ( urls === null )
-          urls = []
-
-        for(let i=0; i<words.length; ++i) {
-           if ( res.indexOf(words[i]) != -1 &&
-            emojiIndex.search(words[i].replaceAll(':','')).flatMap(e => e.colons).filter(e => e == words[i]).length == 1
-           ) {
-                this.data.push({type:'smiley', data: words[i]})
-           } else if ( urls.indexOf(words[i]) != -1 ) {
-               const word = words[i]
-               if ( word.indexOf('youtube') != -1  || word.indexOf('youtu.be') != -1 ) {
-                  const yid = yt(word)
-                   if ( yid ) {
-                       this.data.push({type:'youtube', data: yid, orig: word})
-                   }
-               } else {
-                 const ext = extension.exec(word)
-                 if ( ext && (ext[1] === 'gif' || ext[1] === 'jpg' || ext[1] === 'jpeg' || ext[1] === 'webp' || ext[1] === 'png')  ) {
-                    this.data.push({type:'image', data: word})
-                 } else {
-                    this.data.push({type:'link', data: word})
-                 }
-               }
-           } else {
-               this.data.push({type:'text', data: words[i]})
-           }
-        }
-
+      const yt = (url) => {
+        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
+        const match = url.match(regExp)
+        return (match && match[7].length === 11) ? match[7] : false
       }
+
+      if (res === null) { res = [] }
+
+      if (urls === null) { urls = [] }
+
+      for (let i = 0; i < words.length; ++i) {
+        if (res.indexOf(words[i]) !== -1 &&
+            emojiIndex.search(words[i].replaceAll(':', '')).flatMap(e => e.colons).filter(e => e === words[i]).length === 1
+        ) {
+          this.data.push({type: 'smiley', data: words[i]})
+        } else if (urls.indexOf(words[i]) !== -1) {
+          const word = words[i]
+          if (word.indexOf('youtube') !== -1 || word.indexOf('youtu.be') !== -1) {
+            const yid = yt(word)
+            if (yid) {
+              this.data.push({type: 'youtube', data: yid, orig: word})
+            }
+          } else {
+            const ext = extension.exec(word)
+            if (ext && (ext[1] === 'gif' || ext[1] === 'jpg' || ext[1] === 'jpeg' || ext[1] === 'webp' || ext[1] === 'png')) {
+              this.data.push({type: 'image', data: word})
+            } else {
+              this.data.push({type: 'link', data: word})
+            }
+          }
+        } else {
+          this.data.push({type: 'text', data: words[i]})
+        }
+      }
+    }
   }
 
-};
+}
 </script>

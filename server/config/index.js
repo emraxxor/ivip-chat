@@ -10,16 +10,15 @@ const CONFIG = {
 }
 
 const DATASTORE = {
-   USER: {
-      PROFILE : '/datastore/profile'
-   }
+  USER: {
+    PROFILE: '/datastore/profile'
+  }
 }
-
 
 const CONFIG_ROOMS = [
   {
-      id: 'ROOM_ARENA',
-      name: 'Arena'
+    id: 'ROOM_ARENA',
+    name: 'Arena'
   }
 ]
 

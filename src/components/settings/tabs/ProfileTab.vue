@@ -27,19 +27,17 @@ export default {
   components: {
   },
 
-  data() {
+  data () {
     return {
-        profilePictureData : null,
+      profilePictureData: null
     }
   },
 
   computed: {
-    username() {
+    username () {
       return this.$store.state.username
     }
   },
-
-
 
   mounted () {
 
@@ -47,24 +45,24 @@ export default {
 
   methods: {
 
-      profileFileChanged(evt) {
-          const files = evt.target.files
-          const f = files[0]
-          const reader = new FileReader()
-          reader.onload = this.onFileLoaded
-          reader.readAsDataURL(f)
-      },
+    profileFileChanged (evt) {
+      const files = evt.target.files
+      const f = files[0]
+      const reader = new FileReader()
+      reader.onload = this.onFileLoaded
+      reader.readAsDataURL(f)
+    },
 
-      onFileLoaded(e) {
-        this.profilePictureData = e.target.result
-        this.$refs.profilePicture.src = this.profilePictureData
-        this.upload()
-      },
+    onFileLoaded (e) {
+      this.profilePictureData = e.target.result
+      this.$refs.profilePicture.src = this.profilePictureData
+      this.upload()
+    },
 
-      upload() {
-        this.$store.dispatch('user/uploadImage', { image: this.profilePictureData })
-      }
-  },
+    upload () {
+      this.$store.dispatch('user/uploadImage', { image: this.profilePictureData })
+    }
+  }
 
 }
 </script>

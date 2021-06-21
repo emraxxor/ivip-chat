@@ -23,56 +23,54 @@ import ProfileTabVue from './settings/tabs/ProfileTab.vue'
 
 export default {
 
-
-  data() {
+  data () {
     return {
       display: false,
-      tabs: [ { value: 'General',  name: "general" }, { value: "Chat", name: 'chat' }, { value: "Profile", name: 'profile' }],
-      currentTab: "General",
+      tabs: [{ value: 'General', name: 'general' }, { value: 'Chat', name: 'chat' }, { value: 'Profile', name: 'profile' }],
+      currentTab: 'General'
     }
   },
 
   components: {
-      'tab-general': GeneralTabVue,
-      'tab-profile': ProfileTabVue,
-      'tab-chat': ChatTabVue,
-      DialogWindow,
+    'tab-general': GeneralTabVue,
+    'tab-profile': ProfileTabVue,
+    'tab-chat': ChatTabVue,
+    DialogWindow
   },
 
   computed: {
-          currentTabComponent: function() {
-            return "tab-" + this.currentTab.toLowerCase();
-          }
+    currentTabComponent: function () {
+      return 'tab-' + this.currentTab.toLowerCase()
+    }
   },
 
-  mounted() {
+  mounted () {
 
   },
 
   methods: {
 
-    close(e) {
-       this.display = false
+    close (e) {
+      this.display = false
     },
 
-    show() {
+    show () {
       this.display = true
     },
 
-    toggle() {
+    toggle () {
       this.display = !this.display
     },
 
-
-    validate(e) {
+    validate (e) {
       this.toggle()
     },
 
-    invalidate(e) {
+    invalidate (e) {
       this.toggle()
     }
 
-  },
+  }
 
 }
 </script>

@@ -18,7 +18,6 @@ import { URL } from './config'
 import VueSocketIO from 'vue-socket.io'
 import io from 'socket.io-client'
 
-
 window.jQuery = require('jquery')
 Vue.config.productionTip = false
 
@@ -30,7 +29,7 @@ Vue.use(new VueSocketIO({
     store,
     actionPrefix: 'SOCKET_',
     mutationPrefix: 'SOCKET_'
-  },
+  }
 }))
 
 Vue.use(VueYouTubeEmbed)

@@ -76,16 +76,15 @@
 </div>
 </div>
 
-
 </vue-drag-resize>
 </div>
 </template>
 <script>
-import { EVENTS, PCSIGNAL } from "../config"
+import { EVENTS, PCSIGNAL } from '../config'
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-dialog-drag/dist/vue-dialog-drag.css'
 import '../styles/private.css'
-import PrivateCamera from './PrivateCamera';
+import PrivateCamera from './PrivateCamera'
 
 /**
  *
@@ -93,190 +92,179 @@ import PrivateCamera from './PrivateCamera';
  */
 export default {
 
-  props : {
-      title: {
-            default: 'Title'
-      },
-      width: {
-            default : 800,
-      },
-      height: {
-            default: 500
-      },
-      data : {
-            default : {}
-      }
+  props: {
+    title: {
+      default: 'Title'
+    },
+    width: {
+      default: 800
+    },
+    height: {
+      default: 500
+    },
+    data: {
+      default: {}
+    }
   },
 
-  data : () => ({
-      cnt : 0,
-      msg : '',
-      messages: [],
-      privateCamera: false,
-      canWrite : true,
-      display: true,
-      videoAnswer: {
-        video: undefined,
-        remoteDesc: undefined,
-        candidate: undefined,
-        close: false
-      }
+  data: () => ({
+    cnt: 0,
+    msg: '',
+    messages: [],
+    privateCamera: false,
+    canWrite: true,
+    display: true,
+    videoAnswer: {
+      video: undefined,
+      remoteDesc: undefined,
+      candidate: undefined,
+      close: false
+    }
   }),
 
-  components : {
-    'vue-drag-resize' : VueDraggableResizable,
+  components: {
+    'vue-drag-resize': VueDraggableResizable,
     PrivateCamera
   },
 
-  watch : {
-    messages : function(newv,oldv) {
-      if ( this.display ) {
-        setTimeout( () => {
+  watch: {
+    messages: function (newv, oldv) {
+      if (this.display) {
+        setTimeout(() => {
           this.$refs.messagesBody.scrollTop = this.$refs.messagesBody.scrollHeight
-        },100)
+        }, 100)
       }
 
-      if ( this.messages.length > 30 )
-           this.$delete(this.messages, 0)
+      if (this.messages.length > 30) { this.$delete(this.messages, 0) }
     },
 
-    data(o,n) {
+    data (o, n) {
       this.display = !n.minimized
 
-      if ( this.display )
-        setTimeout( () => this.$refs.dialog.$el.style.transform = "translate(-50%,-50%)" , 100 )
+      if (this.display) { setTimeout(() => { this.$refs.dialog.$el.style.transform = 'translate(-50%,-50%)' }, 100) }
     }
   },
 
   sockets: {
 
-      privateMessage : function( { from, to , message, status  } ) {
-          if ( from == this.data.username && this.canWrite ) {
-            this.messages.push({
-                        type : 'RECEIVED',
-                        cnt : this.cnt,
-                        message : message,
-                        username: from,
-                        time: new Date()
-            })
-            this.cnt++
-            this.data.msgcnt++
-            this.data.__ob__.dep.notify()
-          }
-      },
+    privateMessage: function ({ from, to, message, status }) {
+      if (from === this.data.username && this.canWrite) {
+        this.messages.push({
+          type: 'RECEIVED',
+          cnt: this.cnt,
+          message: message,
+          username: from,
+          time: new Date()
+        })
+        this.cnt++
+        this.data.msgcnt++
+        this.data.__ob__.dep.notify()
+      }
+    },
 
+    closePrivateChat: function ({from, target}) {
+      if (from === this.data.username) {
+        this.canWrite = false
+        this.privateCamera = false
+        this.messages.push({
+          type: 'RECEIVED',
+          cnt: this.cnt,
+          message: `${from} is left the private chat`,
+          username: 'SYSTEM',
+          time: new Date()
+        })
+      }
+    },
 
-      closePrivateChat : function( {from, target} ) {
-          if ( from == this.data.username ) {
-              this.canWrite = false
-              this.privateCamera = false
-              this.messages.push({
-                        type : 'RECEIVED',
-                        cnt : this.cnt,
-                        message : `${from} is left the private chat`,
-                        username: 'SYSTEM',
-                        time: new Date()
-              })
+    PCSignaling: function ({ target, from, candidate, sdp, type, room }) {
+      if (from === this.$store.state.username) return
 
-          }
-      },
-
-      PCSignaling: function({ target , from, candidate, sdp, type, room }) {
-          if (from === this.$store.state.username) return
-
-          if (sdp) {
-            if (sdp.type === PCSIGNAL.OFFER ) {
-              console.log(`[DEV] Received signal (offer) from ${from} `)
-              this.openCamera(sdp, from)
-            } else if (sdp.type === PCSIGNAL.ANSWER ) {
-              console.log(`[DEV] Received signal (answer) from ${from} `)
-              this.videoAnswer = { ...this.videoAnswer, remoteDesc: sdp }
-            } else {
-              console.log("[DEV] Unsupported SDP type")
-            }
-          }  else if (candidate) {
-                console.log(`[DEV] Received candidate from ${from} `)
-                console.log(candidate)
-                this.videoAnswer = { ...this.videoAnswer, candidate }
-          } else {
-                this.videoAnswer = { ...this.videoAnswer, video: undefined, remoteDesc: undefined, from: undefined }
-                this.privateCamera = false
-          }
-       }
+      if (sdp) {
+        if (sdp.type === PCSIGNAL.OFFER) {
+          this.openCamera(sdp, from)
+        } else if (sdp.type === PCSIGNAL.ANSWER) {
+          this.videoAnswer = { ...this.videoAnswer, remoteDesc: sdp }
+        } else {
+          console.warn('[DEV] Unsupported SDP type')
+        }
+      } else if (candidate) {
+        this.videoAnswer = { ...this.videoAnswer, candidate }
+      } else {
+        this.videoAnswer = { ...this.videoAnswer, video: undefined, remoteDesc: undefined, from: undefined }
+        this.privateCamera = false
+      }
+    }
   },
 
-
-  created() {
+  created () {
     this.username = this.$store.state.username
   },
 
-  mounted() {
+  mounted () {
     this.$refs.dialog.$el.children[1].style.padding = 0
-    this.$refs.modaldialog.style.display = "block"; // <b-modal> creates a new layer, so use css instead of that
-    this.$refs.dialog.style.transform = "translate(-50%, -50%)"
+    this.$refs.modaldialog.style.display = 'block' // <b-modal> creates a new layer, so use css instead of that
+    this.$refs.dialog.style.transform = 'translate(-50%, -50%)'
   },
 
-  computed : {
+  computed: {
 
   },
 
-  beforeDestroy() {
+  beforeDestroy () {
     this.closePrivate()
   },
 
-  methods : {
+  methods: {
 
-      openCamera(sdp, from){
-        this.videoAnswer = { ...this.videoAnswer, video: true, remoteDesc: sdp, from }
-        this.privateCamera = true
-      },
+    openCamera (sdp, from) {
+      this.videoAnswer = { ...this.videoAnswer, video: true, remoteDesc: sdp, from }
+      this.privateCamera = true
+    },
 
-      startCamera() {
-         this.privateCamera = true;
-      },
+    startCamera () {
+      this.privateCamera = true
+    },
 
-      close: function(e) {
-        this.$emit('close', this.data)
-      },
+    close: function (e) {
+      this.$emit('close', this.data)
+    },
 
-      onCloseCall() {
-         this.privateCamera = false;
-      },
+    onCloseCall () {
+      this.privateCamera = false
+    },
 
-      closePrivate() {
-        this.$socket.emit(EVENTS.CLOSE_PRIVATE , { from:  this.$store.getters.getUserName, target: this.data.username })
-      },
+    closePrivate () {
+      this.$socket.emit(EVENTS.CLOSE_PRIVATE, { from: this.$store.getters.getUserName, target: this.data.username })
+    },
 
-      minimize(event) {
-          this.data.minimized = true
-          this.data.msgcnt = 0;
-          this.data.__ob__.dep.notify()
-          this.display = false
-      },
+    minimize (event) {
+      this.data.minimized = true
+      this.data.msgcnt = 0
+      this.data.__ob__.dep.notify()
+      this.display = false
+    },
 
-      submit(e) {
-            if ( this.msg.length > 0 ) {
+    submit (e) {
+      if (this.msg.length > 0) {
+        this.$socket.emit(EVENTS.SEND_PRIVATE_MESSAGE, {
+          username: this.$store.getters.getUserName,
+          to: this.data.username,
+          message: this.msg,
+          status: this.$store.state.status
+        })
 
-              this.$socket.emit(EVENTS.SEND_PRIVATE_MESSAGE , {
-                username : this.$store.getters.getUserName,
-                to: this.data.username,
-                message: this.msg,
-                status : this.$store.state.status
-              })
+        this.messages.push({
+          type: 'SENT',
+          cnt: this.cnt,
+          message: this.msg,
+          username: this.$store.getters.getUserName,
+          time: new Date()
+        })
 
-              this.messages.push({
-                        type : 'SENT',
-                        cnt : this.cnt,
-                        message : this.msg,
-                        username: this.$store.getters.getUserName,
-                        time: new Date()
-              })
-
-              this.cnt++
-              this.msg = ''
-            }
-       }
-
+        this.cnt++
+        this.msg = ''
+      }
+    }
 
   }
 }
@@ -288,7 +276,6 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
   }
-
 
   .chat-window {
     width: 70% !important;
@@ -303,8 +290,6 @@ export default {
     &__camera {
       width: 30%;
     }
-
-
 
     &__dialog_container {
        display: flex;

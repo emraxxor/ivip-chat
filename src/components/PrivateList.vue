@@ -23,27 +23,26 @@
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import ToggleComponentVue from './ToggleComponent.vue'
 
-
 export default {
-   props : {
+  props: {
 
-      items: {
-        required: true
-      },
+    items: {
+      required: true
+    },
 
-      parent : {
-        required: true
-      }
-   },
+    parent: {
+      required: true
+    }
+  },
 
-   mixins: [ ToggleComponentVue ],
+  mixins: [ ToggleComponentVue ],
 
-   methods : {
+  methods: {
 
-        handleClick (event, item) {
-            item.minimized = false
-            item.__ob__.dep.notify()
-        }
-   }
+    handleClick (event, item) {
+      item.minimized = false
+      item.__ob__.dep.notify()
+    }
+  }
 }
 </script>
